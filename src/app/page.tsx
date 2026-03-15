@@ -653,9 +653,21 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
       {/* NAV */}
       <nav className="c-nav" ref={navRef}>
         <div className="c-nav-bg-edit" data-edit="bgcolor" data-edit-key="nav-bg" data-edit-target="parent">🎨 Header BG</div>
-        <a href="#" className="c-nav-logo" data-edit="logo" data-edit-key="nav-logo" style={{ marginLeft: 10 }}>
-          <img src="/logo-1.png" alt="El Español" className="c-nav-logo-img" />
-        </a>
+        <div style={{ position: 'relative', marginLeft: 10 }}>
+          <a href="#" className="c-nav-logo" data-edit="logo" data-edit-key="nav-logo">
+            <img src="/logo-1.png" alt="El Español" className="c-nav-logo-img" />
+          </a>
+          {isEditorMode && (
+            <div className="c-nav-logo-edit" onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              const el = e.currentTarget.parentElement?.querySelector('[data-edit-key="nav-logo"]') as HTMLElement;
+              if (el) el.click();
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+          )}
+        </div>
         <div className="c-nav-links">
           <a href="#about" data-edit="text" data-edit-key="nav-link1">Über uns</a>
           <a href="#services" data-edit="text" data-edit-key="nav-link2">Speisekarte</a>

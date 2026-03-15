@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+export const dynamic = "force-dynamic";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const BASE_URL = API_URL.replace(/php\/$/, "");
 
 function fixImagePaths(data: Record<string, Record<string, string>>) {

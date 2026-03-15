@@ -670,6 +670,54 @@ body.te-editing .c-contact-map iframe { pointer-events:none; }
 }
 .c-footer-copy { font-size:13px; color:rgba(255,255,255,0.35); }
 .c-footer-copy a { color:var(--rose); text-decoration:none; }
+.c-footer-legal {
+  display:flex; gap:12px; justify-content:center; align-items:center; margin-top:12px;
+}
+.c-footer-legal a {
+  color:rgba(255,255,255,0.3); text-decoration:none; font-size:12px;
+  transition:color 0.3s;
+}
+.c-footer-legal a:hover { color:rgba(255,255,255,0.6); }
+.c-footer-legal span { color:rgba(255,255,255,0.15); font-size:12px; }
+
+/* COOKIE BANNER */
+.c-cookie-banner {
+  position:fixed; bottom:0; left:0; right:0; z-index:99998;
+  background:rgba(28,28,28,0.95); backdrop-filter:blur(12px);
+  padding:16px 24px; display:flex; align-items:center; justify-content:space-between;
+  gap:20px; flex-wrap:wrap;
+  animation:cookieSlideUp 0.4s ease;
+}
+@keyframes cookieSlideUp {
+  from { transform:translateY(100%); } to { transform:translateY(0); }
+}
+.c-cookie-banner p {
+  color:rgba(255,255,255,0.7); font-size:13px; margin:0;
+  font-family:var(--sans); line-height:1.5;
+}
+.c-cookie-actions { display:flex; gap:12px; align-items:center; flex-shrink:0; }
+.c-cookie-accept {
+  padding:8px 20px; border-radius:20px; border:none;
+  background:var(--rose); color:#fff; font-size:13px; font-weight:600;
+  cursor:pointer; font-family:var(--sans); transition:background 0.3s;
+}
+.c-cookie-accept:hover { background:#a82a22; }
+.c-cookie-link {
+  color:rgba(255,255,255,0.5); font-size:12px; text-decoration:underline;
+  font-family:var(--sans);
+}
+.c-cookie-link:hover { color:#fff; }
+
+/* LEGAL MODAL */
+.c-legal-modal { max-width:600px; }
+.c-legal-content p { font-size:14px; color:#444; line-height:1.7; margin:0 0 4px; font-family:var(--sans); }
+.c-legal-content p:first-child { font-size:18px; font-weight:600; color:#2c2c2c; margin-bottom:16px; }
+.c-legal-textarea {
+  width:100%; min-height:400px; padding:16px; border:1px solid #ddd;
+  border-radius:12px; font-size:14px; font-family:var(--sans);
+  line-height:1.7; resize:vertical; outline:none; box-sizing:border-box;
+}
+.c-legal-textarea:focus { border-color:var(--rose); }
 
 /* LOADER EDITOR BTN */
 .c-loader-editor-wrap {

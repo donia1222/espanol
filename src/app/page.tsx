@@ -183,13 +183,81 @@ export default function Home() {
   const [evtChips, setEvtChips] = useState(['Tapas','Paella','Rioja','Sangría','Jamón','Olé','Churros','Gazpacho','Cava','Tortilla']);
   const [evtChipsColor, setEvtChipsColor] = useState('#c9362c');
   const [evtChipsOpacity, setEvtChipsOpacity] = useState(0.3);
+  const [showCookie, setShowCookie] = useState(false);
+  const [legalModal, setLegalModal] = useState<'datenschutz' | 'agb' | null>(null);
+  const [datenschutzText, setDatenschutzText] = useState(`Datenschutzerklärung
+
+El Español, Langäulistrasse 22, 9470 Buchs SG, Schweiz
+
+1. Verantwortliche Stelle
+Verantwortlich für die Datenverarbeitung auf dieser Website ist El Español, Langäulistrasse 22, 9470 Buchs SG.
+
+2. Erhebung und Verarbeitung personenbezogener Daten
+Beim Besuch unserer Website werden automatisch Informationen allgemeiner Natur erfasst (z.B. Browsertyp, Betriebssystem, Uhrzeit des Zugriffs). Diese Daten lassen keine Rückschlüsse auf Ihre Person zu und werden ausschliesslich zur Sicherstellung eines störungsfreien Betriebs und zur Verbesserung unseres Angebots ausgewertet.
+
+3. Cookies
+Diese Website verwendet Cookies, um die Benutzerfreundlichkeit zu verbessern. Sie können die Speicherung von Cookies in Ihren Browsereinstellungen deaktivieren.
+
+4. Kontaktformular und Reservierungen
+Wenn Sie uns per Kontaktformular, Telefon oder WhatsApp kontaktieren, werden Ihre Angaben zur Bearbeitung Ihrer Anfrage gespeichert. Eine Weitergabe an Dritte erfolgt nicht.
+
+5. Google Maps
+Diese Website nutzt Google Maps zur Darstellung unseres Standorts. Dabei können Daten an Google übertragen werden. Weitere Informationen finden Sie in der Datenschutzerklärung von Google.
+
+6. Ihre Rechte
+Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer personenbezogenen Daten. Kontaktieren Sie uns hierzu unter den oben genannten Kontaktdaten.
+
+7. Änderungen
+Wir behalten uns vor, diese Datenschutzerklärung jederzeit anzupassen.`);
+
+  const [agbText, setAgbText] = useState(`Allgemeine Geschäftsbedingungen (AGB)
+
+El Español, Langäulistrasse 22, 9470 Buchs SG, Schweiz
+
+1. Geltungsbereich
+Diese AGB gelten für alle Reservierungen und Bestellungen im Restaurant El Español.
+
+2. Reservierungen
+Reservierungen können telefonisch, per WhatsApp oder über unsere Website vorgenommen werden. Bei Nichterscheinen oder kurzfristiger Stornierung (weniger als 24 Stunden vorher) behalten wir uns vor, eine Aufwandsentschädigung zu berechnen.
+
+3. Preise und Zahlung
+Alle Preise verstehen sich in Schweizer Franken (CHF) inklusive Mehrwertsteuer. Wir akzeptieren Barzahlung, EC-Karte und gängige Kreditkarten.
+
+4. Haftung
+El Español haftet nicht für persönliche Gegenstände der Gäste. Die Nutzung der Garderobe erfolgt auf eigene Gefahr.
+
+5. Privatveranstaltungen
+Für Privatveranstaltungen gelten gesonderte Vereinbarungen, die schriftlich festgehalten werden. Stornierungen müssen mindestens 7 Tage vor dem Termin erfolgen.
+
+6. Hausordnung
+Wir bitten unsere Gäste um respektvollen Umgang miteinander und mit unserem Personal. Das Restaurant behält sich das Hausrecht vor.
+
+7. Gutscheine
+Gutscheine sind ab Ausstellungsdatum 12 Monate gültig und können nicht gegen Bargeld eingelöst werden.
+
+8. Anwendbares Recht
+Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
+
+  useEffect(() => {
+    const cookieAccepted = localStorage.getItem('cookie-accepted');
+    if (!cookieAccepted) setShowCookie(true);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const ds = localStorage.getItem('legal-datenschutz');
+      if (ds) setDatenschutzText(ds);
+      const ag = localStorage.getItem('legal-agb');
+      if (ag) setAgbText(ag);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('loader-config');
       if (saved) {
         const c = JSON.parse(saved);
-        if (c.enabled === false) { setLoaderEnabled(false); setShowLoader(false); return; }
+        if (c.enabled === false) { setLoaderEnabled(false); }
         if (c.bg) setLoaderBg(c.bg);
         if (c.text) setLoaderText(c.text);
         if (c.tagline) setLoaderTagline(c.tagline);
@@ -1142,6 +1210,11 @@ export default function Home() {
         </div>
         <div className="c-footer-divider"></div>
         <div className="c-footer-copy" data-edit="text" data-edit-key="footer-copy">© 2026 El Español — Langäulistrasse 22, Buchs SG</div>
+        <div className="c-footer-legal">
+          <a href="#" onClick={(e) => { e.preventDefault(); setLegalModal('datenschutz'); }}>Datenschutz</a>
+          <span>|</span>
+          <a href="#" onClick={(e) => { e.preventDefault(); setLegalModal('agb'); }}>AGB</a>
+        </div>
       </footer>
       {isEditorMode && (
         <div className="c-loader-editor-wrap" onClick={() => setLoaderModalOpen(true)}>
@@ -1279,6 +1352,56 @@ export default function Home() {
                 setChipsModalOpen(false);
               }}>Speichern</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cookie Banner */}
+      {showCookie && (
+        <div className="c-cookie-banner" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 99998, background: 'rgba(28,28,28,0.95)', backdropFilter: 'blur(12px)', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, margin: 0, fontFamily: 'var(--sans)', lineHeight: 1.5 }}>Diese Website verwendet Cookies, um Ihnen die bestmögliche Erfahrung zu bieten.</p>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexShrink: 0 }}>
+            <button onClick={() => { localStorage.setItem('cookie-accepted', '1'); setShowCookie(false); }} style={{ padding: '8px 20px', borderRadius: 20, border: 'none', background: 'var(--rose)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>Akzeptieren</button>
+            <a href="#" onClick={(e) => { e.preventDefault(); setLegalModal('datenschutz'); }} style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, textDecoration: 'underline', fontFamily: 'var(--sans)' }}>Mehr erfahren</a>
+          </div>
+        </div>
+      )}
+
+      {/* Legal Modal */}
+      {legalModal && (
+        <div className="c-loader-modal-overlay" onClick={() => setLegalModal(null)}>
+          <div className="c-loader-modal c-legal-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="c-loader-modal-header">
+              <h3>{legalModal === 'datenschutz' ? 'Datenschutzerklärung' : 'AGB'}</h3>
+              <button onClick={() => setLegalModal(null)} className="c-loader-modal-close">&times;</button>
+            </div>
+            <div className="c-loader-modal-body">
+              {isEditorMode ? (
+                <textarea
+                  className="c-legal-textarea"
+                  value={legalModal === 'datenschutz' ? datenschutzText : agbText}
+                  onChange={(e) => {
+                    if (legalModal === 'datenschutz') setDatenschutzText(e.target.value);
+                    else setAgbText(e.target.value);
+                  }}
+                />
+              ) : (
+                <div className="c-legal-content">
+                  {(legalModal === 'datenschutz' ? datenschutzText : agbText).split('\n').map((line, i) => (
+                    <p key={i}>{line || '\u00A0'}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+            {isEditorMode && (
+              <div className="c-loader-modal-footer">
+                <button className="c-loader-modal-save" onClick={() => {
+                  if (legalModal === 'datenschutz') localStorage.setItem('legal-datenschutz', datenschutzText);
+                  else localStorage.setItem('legal-agb', agbText);
+                  setLegalModal(null);
+                }}>Speichern</button>
+              </div>
+            )}
           </div>
         </div>
       )}

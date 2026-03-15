@@ -202,6 +202,20 @@
                     el.target = '_blank';
                     el.rel = 'noopener noreferrer';
                 }
+                if (data.color) {
+                    if (el.getAttribute('data-edit-color-target') === 'background') {
+                        el.style.backgroundColor = data.color;
+                    } else {
+                        el.style.color = data.color;
+                    }
+                }
+                if (data.size) {
+                    var svg = el.querySelector('svg');
+                    if (svg) {
+                        svg.setAttribute('width', data.size);
+                        svg.setAttribute('height', data.size);
+                    }
+                }
             } else if (editType === 'map') {
                 if (data.address) {
                     var iframe = el.querySelector('iframe');
@@ -215,7 +229,8 @@
                     var r = parseInt(data.bgColor.slice(1,3), 16);
                     var g = parseInt(data.bgColor.slice(3,5), 16);
                     var b = parseInt(data.bgColor.slice(5,7), 16);
-                    el.style.backgroundColor = 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+                    var bgTarget = el.getAttribute('data-edit-target') === 'parent' ? el.parentElement : el;
+                    if (bgTarget) bgTarget.style.backgroundColor = 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
                 }
             } else if (editType === 'logo') {
                 if (data.useImage && data.logoSrc) {
@@ -1009,6 +1024,11 @@
         var currentHref = data.href || el.href || '';
         if (currentHref === '#' || currentHref.endsWith('/#')) currentHref = '';
         var label = el.getAttribute('aria-label') || currentKey;
+        var currentColor = data.color || getComputedStyle(el).color;
+        var hexColor = rgbToHex(currentColor);
+        var svg = el.querySelector('svg');
+        var currentSize = data.size || (svg ? svg.getAttribute('width') : '18') || '18';
+        var sizeNum = parseInt(currentSize) || 18;
 
         sidebar.querySelector('.te-el-type').textContent = 'Link';
         sidebar.querySelector('.te-title-text').textContent = label;
@@ -1018,9 +1038,45 @@
             '  <label>' + escapeHtml(label) + ' — URL</label>' +
             '  <input type="text" class="te-input" id="teLinkUrl" value="' + escapeHtml(currentHref) + '" placeholder="https://instagram.com/dein-profil">' +
             '</div>' +
+            '<div class="te-group">' +
+            '  <label>Farbe</label>' +
+            '  <div class="te-color-row">' +
+            '    <input type="color" class="te-color-picker" id="teLinkColor" value="' + hexColor + '">' +
+            '    <input type="text" class="te-color-hex" id="teLinkColorHex" value="' + hexColor + '" maxlength="7">' +
+            '  </div>' +
+            '</div>' +
+            '<div class="te-group">' +
+            '  <label>Grösse <span id="teLinkSizeVal">' + sizeNum + 'px</span></label>' +
+            '  <input type="range" class="te-range" id="teLinkSize" min="12" max="60" value="' + sizeNum + '">' +
+            '</div>' +
             '<div class="te-group" style="font-size:13px;color:#6b7d99">' +
             '  <p>Der Link öffnet sich in einem neuen Tab.</p>' +
             '</div>';
+
+        var colorPicker = body.querySelector('#teLinkColor');
+        var colorHex = body.querySelector('#teLinkColorHex');
+        var sizeRange = body.querySelector('#teLinkSize');
+        var sizeVal = body.querySelector('#teLinkSizeVal');
+        var isBgColor = el.getAttribute('data-edit-color-target') === 'background';
+        colorPicker.addEventListener('input', function() {
+            colorHex.value = colorPicker.value;
+            if (isBgColor) { el.style.backgroundColor = colorPicker.value; } else { el.style.color = colorPicker.value; }
+        });
+        colorHex.addEventListener('input', function() {
+            if (/^#[0-9a-fA-F]{6}$/.test(colorHex.value)) {
+                colorPicker.value = colorHex.value;
+                if (isBgColor) { el.style.backgroundColor = colorHex.value; } else { el.style.color = colorHex.value; }
+            }
+        });
+        sizeRange.addEventListener('input', function() {
+            var s = sizeRange.value;
+            sizeVal.textContent = s + 'px';
+            var svgEl = el.querySelector('svg');
+            if (svgEl) {
+                svgEl.setAttribute('width', s);
+                svgEl.setAttribute('height', s);
+            }
+        });
 
         openSidebar();
     }
@@ -1067,7 +1123,8 @@
     function openBgColorEditor(el) {
         var body = sidebar.querySelector('#teSidebarBody');
         var data = savedData[currentKey] || {};
-        var computedBg = getComputedStyle(el).backgroundColor;
+        var bgTarget = el.getAttribute('data-edit-target') === 'parent' ? el.parentElement : el;
+        var computedBg = getComputedStyle(bgTarget).backgroundColor;
         var defaultColor = rgbToHex(computedBg);
         var defaultOpacity = 1;
         var rgbaMatch = computedBg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
@@ -1112,7 +1169,8 @@
             var r = parseInt(hex.slice(1,3), 16);
             var g = parseInt(hex.slice(3,5), 16);
             var b = parseInt(hex.slice(5,7), 16);
-            el.style.backgroundColor = 'rgba(' + r + ',' + g + ',' + b + ',' + op + ')';
+            var liveTarget = el.getAttribute('data-edit-target') === 'parent' ? el.parentElement : el;
+            if (liveTarget) liveTarget.style.backgroundColor = 'rgba(' + r + ',' + g + ',' + b + ',' + op + ')';
             preview.style.backgroundColor = hex;
             preview.style.opacity = op;
         }
@@ -1218,12 +1276,30 @@
             }
         } else if (editType === 'link') {
             var linkUrl = sidebar.querySelector('#teLinkUrl');
+            var linkColor = sidebar.querySelector('#teLinkColor');
+            var linkSize = sidebar.querySelector('#teLinkSize');
             var href = linkUrl ? linkUrl.value.trim() : '';
-            savedData[currentKey] = { href: href };
+            var color = linkColor ? linkColor.value : '';
+            var size = linkSize ? linkSize.value : '';
+            savedData[currentKey] = { href: href, color: color, size: size };
             if (href) {
                 currentElement.href = href;
                 currentElement.target = '_blank';
                 currentElement.rel = 'noopener noreferrer';
+            }
+            if (color) {
+                if (currentElement.getAttribute('data-edit-color-target') === 'background') {
+                    currentElement.style.backgroundColor = color;
+                } else {
+                    currentElement.style.color = color;
+                }
+            }
+            if (size) {
+                var svgEl = currentElement.querySelector('svg');
+                if (svgEl) {
+                    svgEl.setAttribute('width', size);
+                    svgEl.setAttribute('height', size);
+                }
             }
         } else if (editType === 'map') {
             var mapAddress = sidebar.querySelector('#teMapAddress');

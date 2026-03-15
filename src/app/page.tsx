@@ -170,6 +170,46 @@ export default function Home() {
   const [menu, setMenu] = useState<MenuData>(defaultMenuData);
   const [editDraft, setEditDraft] = useState<MenuSection[]>([]);
   const [isEditorMode, setIsEditorMode] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
+  const [loaderModalOpen, setLoaderModalOpen] = useState(false);
+  const [loaderEnabled, setLoaderEnabled] = useState(true);
+  const [loaderBg, setLoaderBg] = useState('#fdf8f0');
+  const [loaderText, setLoaderText] = useState('El Español Buchs');
+  const [loaderTagline, setLoaderTagline] = useState('Spanisches Restaurant & Tapas Bar — Buchs SG');
+  const [loaderImg, setLoaderImg] = useState('/logo-1.png');
+  const [loaderTextColor, setLoaderTextColor] = useState('#2c2c2c');
+  const [loaderTaglineColor, setLoaderTaglineColor] = useState('#8a8a8a');
+  const [chipsModalOpen, setChipsModalOpen] = useState(false);
+  const [evtChips, setEvtChips] = useState(['Tapas','Paella','Rioja','Sangría','Jamón','Olé','Churros','Gazpacho','Cava','Tortilla']);
+  const [evtChipsColor, setEvtChipsColor] = useState('#c9362c');
+  const [evtChipsOpacity, setEvtChipsOpacity] = useState(0.3);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('loader-config');
+      if (saved) {
+        const c = JSON.parse(saved);
+        if (c.enabled === false) { setLoaderEnabled(false); setShowLoader(false); return; }
+        if (c.bg) setLoaderBg(c.bg);
+        if (c.text) setLoaderText(c.text);
+        if (c.tagline) setLoaderTagline(c.tagline);
+        if (c.img) setLoaderImg(c.img);
+        if (c.textColor) setLoaderTextColor(c.textColor);
+        if (c.taglineColor) setLoaderTaglineColor(c.taglineColor);
+      }
+    } catch {}
+    try {
+      const chipsRaw = localStorage.getItem('events-chips-config');
+      if (chipsRaw) {
+        const cc = JSON.parse(chipsRaw);
+        if (cc.chips) setEvtChips(cc.chips);
+        if (cc.color) setEvtChipsColor(cc.color);
+        if (cc.opacity !== undefined) setEvtChipsOpacity(cc.opacity);
+      }
+    } catch {}
+    const timer = setTimeout(() => setShowLoader(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const [eventModal, setEventModal] = useState(false);
   const [eventEditing, setEventEditing] = useState(false);
@@ -185,7 +225,7 @@ export default function Home() {
   const defaultEvent: EventData = {
     title: "Ihr privates Event",
     subtitle: "Feiern Sie bei uns — wir kümmern uns um alles",
-    image: "/imagens/572647358_18530299819015485_6265063719025103180_n.jpg",
+    image: "/imagens/651545438_18561993517015485_8719417173028106237_n.jpg",
     types: ["Geburtstag", "Firmenevent", "Hochzeit", "Familienfeier", "Jubiläum"],
     menuItems: [
       "Tapas-Platte gemischt",
@@ -288,7 +328,6 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
-
   // Load menu from API
   useEffect(() => {
     fetch("/api/load")
@@ -316,7 +355,7 @@ export default function Home() {
 
   useEffect(() => {
     const handleScroll = () => {
-      navRef.current?.classList.toggle("scrolled", window.pageYOffset > 80);
+      navRef.current?.classList.toggle("scrolled", window.pageYOffset > window.innerHeight - 100);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -353,6 +392,7 @@ export default function Home() {
     setMenuOpen(false);
     document.body.style.overflow = "";
   }, []);
+
 
   const openMenuModal = (cat: MenuCategory, edit = false) => {
     setMenuModal(cat);
@@ -417,19 +457,34 @@ export default function Home() {
 
   const displayData = menuEditing ? editDraft : (menuModal ? menu[menuModal] : []);
 
+  // Star SVG for testimonials
+  const starSvg = <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>;
+
   return (
     <>
+      {/* LOADER */}
+      {showLoader && loaderEnabled && (
+        <div className="c-loader" style={{ background: loaderBg }}>
+          <div className="c-loader-content">
+            <img src={loaderImg} alt="El Español" style={{ width: 120, display: 'block', margin: '0 auto 20px' }} className="c-loader-logo" />
+            <div className="c-loader-name" style={{ color: loaderTextColor }}>{loaderText}</div>
+            <div className="c-loader-tagline" style={{ color: loaderTaglineColor }}>{loaderTagline}</div>
+          </div>
+        </div>
+      )}
+
       {/* NAV */}
-      <nav className="c-nav" ref={navRef} data-edit="bgcolor" data-edit-key="nav-bg">
-        <a href="#" className="c-nav-logo" style={{ marginLeft: 40 }} data-edit="logo" data-edit-key="nav-logo">
-          El Español
+      <nav className="c-nav" ref={navRef}>
+        <div className="c-nav-bg-edit" data-edit="bgcolor" data-edit-key="nav-bg" data-edit-target="parent">🎨 Header BG</div>
+        <a href="#" className="c-nav-logo" data-edit="logo" data-edit-key="nav-logo" style={{ marginLeft: 10 }}>
+          <img src="/logo-1.png" alt="El Español" className="c-nav-logo-img" />
         </a>
         <div className="c-nav-links">
           <a href="#about" data-edit="text" data-edit-key="nav-link1">Über uns</a>
           <a href="#services" data-edit="text" data-edit-key="nav-link2">Speisekarte</a>
           <a href="#gallery" data-edit="text" data-edit-key="nav-link3">Galerie</a>
           <a href="#team" data-edit="text" data-edit-key="nav-link4">Highlights</a>
-          <a href="#contact" className="c-nav-cta" data-edit="text" data-edit-key="nav-cta">Tisch reservieren</a>
+          <a href="#contact" className="c-nav-cta" data-edit="text" data-edit-key="nav-link5">Tisch reservieren</a>
         </div>
         <button
           className={`c-nav-burger${menuOpen ? " open" : ""}`}
@@ -441,21 +496,32 @@ export default function Home() {
       </nav>
 
       {/* Mobile Menu */}
-      <div className={`c-mobile-menu${menuOpen ? " open" : ""}`}>
-        <a href="#about" onClick={closeMenu} data-edit="text" data-edit-key="nav-link1">Über uns</a>
-        <a href="#services" onClick={closeMenu} data-edit="text" data-edit-key="nav-link2">Speisekarte</a>
-        <a href="#gallery" onClick={closeMenu} data-edit="text" data-edit-key="nav-link3">Galerie</a>
-        <a href="#team" onClick={closeMenu} data-edit="text" data-edit-key="nav-link4">Highlights</a>
-        <a href="#contact" onClick={closeMenu} data-edit="text" data-edit-key="nav-cta">Tisch reservieren</a>
+      <div className={`c-mobile-menu${menuOpen ? " open" : ""}`} data-edit="bgcolor" data-edit-key="mobile-menu-bg">
+        <img src="/logo-1.png" alt="El Español" style={{ width: 100, marginBottom: 20 }} />
+        <a href="#about" onClick={closeMenu} data-edit="text" data-edit-key="mobile-link1" style={{ color: '#2c2c2c', fontSize: 22, fontFamily: 'var(--sans)' }}>Über uns</a>
+        <a href="#services" onClick={closeMenu} data-edit="text" data-edit-key="mobile-link2" style={{ color: '#2c2c2c', fontSize: 22, fontFamily: 'var(--sans)' }}>Speisekarte</a>
+        <a href="#gallery" onClick={closeMenu} data-edit="text" data-edit-key="mobile-link3" style={{ color: '#2c2c2c', fontSize: 22, fontFamily: 'var(--sans)' }}>Galerie</a>
+        <a href="#team" onClick={closeMenu} data-edit="text" data-edit-key="mobile-link4" style={{ color: '#2c2c2c', fontSize: 22, fontFamily: 'var(--sans)' }}>Highlights</a>
+        <a href="#contact" onClick={closeMenu} data-edit="text" data-edit-key="mobile-link5" style={{ color: '#2c2c2c', fontSize: 22, fontFamily: 'var(--sans)' }}>Tisch reservieren</a>
+        <div style={{ marginTop: 40, textAlign: 'center', opacity: 0.5 }}>
+          <div data-edit="text" data-edit-key="mobile-info-name" style={{ fontFamily: 'var(--serif)', fontSize: 18, color: '#2c2c2c', marginBottom: 4 }}>El Español Buchs</div>
+          <div data-edit="text" data-edit-key="mobile-info-tagline" style={{ fontSize: 12, color: '#8a8a8a', letterSpacing: '0.08em' }}>Spanisches Restaurant &amp; Tapas Bar — Buchs SG</div>
+        </div>
       </div>
 
       {/* HERO */}
       <section className="c-hero">
         <div className="c-hero-bg" data-edit="image" data-edit-key="hero-bg"></div>
         <div className="c-hero-content">
+          <div className="c-hero-ornament">
+            <div className="c-hero-ornament-line"></div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <div className="c-hero-ornament-line"></div>
+          </div>
           <div className="c-hero-tag" data-edit="text" data-edit-key="hero-tag">
             Spanisches Restaurant &amp; Tapas Bar
           </div>
+          <img src="/logo-1.png" alt="El Español" style={{ maxWidth: 220, margin: '0 auto 20px', display: 'block', background: '#fff', borderRadius: '50%', padding: 12 }} data-edit="image" data-edit-key="hero-logo" />
           <h1 data-edit="text" data-edit-key="hero-title">El Español</h1>
           <p className="c-hero-sub" data-edit="text" data-edit-key="hero-sub">
             Authentische spanische Küche, frische Tapas und erlesene Weine
@@ -470,6 +536,10 @@ export default function Home() {
             </a>
           </div>
         </div>
+        <a href="#about" className="c-hero-scroll">
+          <span>Entdecken</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+        </a>
       </section>
 
       {/* ABOUT */}
@@ -490,6 +560,9 @@ export default function Home() {
             <h3 className="c-section-title" data-edit="text" data-edit-key="about-title">
               Authentische spanische Küche
             </h3>
+            <div className="c-ornamental-divider" style={{ margin: '16px 0 24px', justifyContent: 'flex-start' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 4a2 2 0 110 4 2 2 0 010-4zm0 14c-2.7 0-5.1-1.4-6.5-3.5 0-2.2 4.3-3.4 6.5-3.4s6.5 1.2 6.5 3.4C17.1 18.6 14.7 20 12 20z"/></svg>
+            </div>
             <p data-edit="text" data-edit-key="about-p1">
               Im El Español bringen wir die Aromen Spaniens direkt nach Buchs. Unsere Küche
               verwendet frische, hochwertige Zutaten und traditionelle Rezepte aus allen Regionen Spaniens.
@@ -509,17 +582,52 @@ export default function Home() {
       </section>
       </div>
 
+      {/* STATS BANNER */}
+      <section className="c-stats-section" data-edit="bgcolor" data-edit-key="stats-bg">
+        <div className="c-stats-grid">
+          <div className="c-stat fade-up">
+            <div className="c-stat-number" data-edit="text" data-edit-key="stat1-number">50<span>+</span></div>
+            <div className="c-stat-label" data-edit="text" data-edit-key="stat1-label">Gerichte</div>
+          </div>
+          <div className="c-stat fade-up fade-up-delay-1">
+            <div className="c-stat-number" data-edit="text" data-edit-key="stat2-number">100<span>%</span></div>
+            <div className="c-stat-label" data-edit="text" data-edit-key="stat2-label">Spanisch</div>
+          </div>
+          <div className="c-stat fade-up fade-up-delay-2">
+            <div className="c-stat-number" data-edit="text" data-edit-key="stat3-number">30<span>+</span></div>
+            <div className="c-stat-label" data-edit="text" data-edit-key="stat3-label">Spanische Weine</div>
+          </div>
+          <div className="c-stat fade-up fade-up-delay-3">
+            <div className="c-stat-number" data-edit="text" data-edit-key="stat4-number">5<span>★</span></div>
+            <div className="c-stat-label" data-edit="text" data-edit-key="stat4-label">Bewertung</div>
+          </div>
+        </div>
+      </section>
+
       {/* SPEISEKARTE */}
       <section className="c-services-section" id="services">
         <div className="c-services-bg-edit" data-edit="bgcolor" data-edit-key="services-bg"></div>
-        <div className="c-section" style={{ paddingTop: 100, paddingBottom: 100, position: "relative", zIndex: 1 }}>
+        <div className="c-events-floating-words">
+          {evtChips.map((word, i) => {
+            const positions = [
+              { top: '22%', left: '2%' }, { top: '30%', right: '2%' }, { top: '50%', left: '1%' },
+              { top: '60%', right: '1%' }, { top: '80%', left: '3%' }, { top: '40%', right: '1%' },
+              { top: '70%', left: '2%' }, { top: '90%', right: '3%' }, { top: '85%', right: '50%' }
+            ];
+            const pos = positions[i % positions.length];
+            return <span key={i} className="c-float-word" style={{ ...pos, animationDelay: `${(i * 0.35) % 2.5}s`, color: evtChipsColor, opacity: evtChipsOpacity }}>{word}</span>;
+          })}
+        </div>
+        <div className="c-section" style={{ paddingTop: 120, paddingBottom: 120, position: "relative", zIndex: 1 }}>
           <div className="c-section-header fade-up">
             <div className="c-section-tag" data-edit="text" data-edit-key="svc-tag">Speisekarte</div>
             <h2 className="c-section-title" data-edit="text" data-edit-key="svc-title">Unsere Spezialitäten</h2>
             <p className="c-section-desc" data-edit="text" data-edit-key="svc-desc">
               Klicken Sie auf eine Kategorie, um die vollständige Karte zu sehen.
             </p>
-            <div className="c-divider"></div>
+            <div className="c-ornamental-divider">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
           </div>
           <div className="c-services-grid">
             {(["vorspeisen", "hauptgerichte", "desserts"] as MenuCategory[]).map((cat, i) => {
@@ -537,7 +645,7 @@ export default function Home() {
               ];
               const ctaKeys = ["svc1-cta", "svc2-cta", "svc3-cta"];
               return (
-                <div key={cat} className="c-service-card fade-up">
+                <div key={cat} className={`c-service-card fade-up fade-up-delay-${i + 1}`}>
                   <div className="c-service-img">
                     <img src={imgs[i]} alt={titles[i]} loading="lazy" data-edit="image" data-edit-key={editKeys[i][0]} />
                   </div>
@@ -567,8 +675,8 @@ export default function Home() {
             })}
           </div>
 
-          {/* SEGUNDA FILA: Drinks, Vinos, Eventos */}
-          <div className="c-services-grid" style={{ marginTop: 32 }}>
+          {/* SEGUNDA FILA: Drinks, Vinos */}
+          <div className="c-services-grid" style={{ marginTop: 32, gridTemplateColumns: 'repeat(2, 1fr)' }}>
             {/* DRINKS */}
             <div className="c-service-card fade-up">
               <div className="c-service-img">
@@ -595,7 +703,7 @@ export default function Home() {
             </div>
 
             {/* VINOS */}
-            <div className="c-service-card fade-up">
+            <div className="c-service-card fade-up fade-up-delay-1">
               <div className="c-service-img">
                 <img src="/imagens/589912264_18536655103015485_3152331592810438615_n.jpg" alt="Vinos" loading="lazy" data-edit="image" data-edit-key="svc5-img" />
               </div>
@@ -618,30 +726,60 @@ export default function Home() {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* EVENTOS */}
-            <div className="c-service-card fade-up">
-              <div className="c-service-img">
-                <img src="/imagens/572647358_18530299819015485_6265063719025103180_n.jpg" alt="Eventos" loading="lazy" data-edit="image" data-edit-key="svc6-img" />
+      {/* EVENTOS SECTION */}
+      {isEditorMode && (
+        <div className="c-chips-editor-wrap" onClick={() => setChipsModalOpen(true)}>
+          <div className="c-chips-editor-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            Chips Config
+          </div>
+        </div>
+      )}
+      <section className="c-events-section" data-edit="bgcolor" data-edit-key="events-bg">
+        <div className="c-events-floating-words">
+          {evtChips.map((word, i) => {
+            const positions = [
+              { top: '8%', left: '5%' }, { top: '20%', right: '8%' }, { top: '45%', left: '3%' },
+              { top: '70%', right: '5%' }, { top: '85%', left: '8%' }, { top: '35%', right: '3%' },
+              { top: '60%', left: '6%' }, { top: '15%', left: '40%' }, { top: '75%', right: '12%' },
+              { top: '50%', right: '15%' }
+            ];
+            const pos = positions[i % positions.length];
+            return <span key={i} className="c-float-word" style={{ ...pos, animationDelay: `${(i * 0.3) % 2.5}s`, color: evtChipsColor, opacity: evtChipsOpacity }}>{word}</span>;
+          })}
+        </div>
+        <div className="c-section" style={{ paddingTop: 60, paddingBottom: 60, position: 'relative', zIndex: 1 }}>
+          <div className="c-events-layout fade-up">
+            <div className="c-events-text">
+              <div className="c-section-tag" data-edit="text" data-edit-key="events-tag">Events</div>
+              <h2 className="c-section-title" data-edit="text" data-edit-key="events-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" strokeWidth="1.5"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+                Eventos
+              </h2>
+              <p className="c-section-desc" data-edit="text" data-edit-key="events-desc">Feiern Sie Ihren besonderen Anlass bei uns — Menü, Getränke und Ambiente ganz nach Ihren Wünschen.</p>
+              <div className="c-ornamental-divider" style={{ margin: '20px 0 0', justifyContent: 'flex-start' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
               </div>
-              <div className="c-service-body">
-                <h3 data-edit="text" data-edit-key="svc6-title">Eventos Privados</h3>
-                <p data-edit="text" data-edit-key="svc6-desc">Feiern Sie Ihren besonderen Anlass bei uns — Menü, Getränke und Ambiente nach Wunsch.</p>
-                <span
-                  className="c-service-cta"
-                  data-edit="text"
-                  data-edit-key="svc6-cta"
-                  onClick={() => { if (!isEditorMode) { setEventModal(true); setEventEditing(false); document.body.style.overflow = "hidden"; } }}
-                >
-                  Mehr erfahren
-                </span>
-                {isEditorMode && (
-                  <button className="c-service-edit-btn" onClick={() => openEventModal(true)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    Event bearbeiten
-                  </button>
-                )}
-              </div>
+            </div>
+            <div
+              className="c-events-img"
+              onClick={() => { if (!isEditorMode) { setEventModal(true); setEventEditing(false); document.body.style.overflow = "hidden"; } }}
+              style={{ cursor: isEditorMode ? 'default' : 'pointer' }}
+            >
+              <img
+                src="/imagens/651545438_18561993517015485_8719417173028106237_n.jpg"
+                alt="Eventos"
+                className="c-events-banner-img"
+              />
+              {!isEditorMode && (
+                <div className="c-events-img-overlay">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -739,91 +877,8 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              <div className="menu-modal-body">
-                {/* Header image */}
-                <div className="event-header-img" style={{ backgroundImage: `url(${d.image})` }}>
-                  <div className="event-header-overlay">
-                    {eventEditing ? (
-                      <>
-                        <input className="event-title-input" value={d.title} onChange={(e) => setEventDraft({ ...eventDraft, title: e.target.value })} />
-                        <input className="event-subtitle-input" value={d.subtitle} onChange={(e) => setEventDraft({ ...eventDraft, subtitle: e.target.value })} />
-                      </>
-                    ) : (
-                      <>
-                        <h3 className="event-title">{d.title}</h3>
-                        <p className="event-subtitle">{d.subtitle}</p>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Event types */}
-                <div className="menu-modal-section">
-                  <h3>Art des Events</h3>
-                  <div className="event-types">
-                    {d.types.map((t, i) => (
-                      <div key={i} className="event-type-tag">
-                        {eventEditing ? (
-                          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-                            <input className="menu-edit-name" value={t} onChange={(e) => {
-                              const draft = { ...eventDraft, types: [...eventDraft.types] };
-                              draft.types[i] = e.target.value;
-                              setEventDraft(draft);
-                            }} />
-                            <button className="menu-edit-remove" onClick={() => {
-                              const draft = { ...eventDraft, types: eventDraft.types.filter((_, idx) => idx !== i) };
-                              setEventDraft(draft);
-                            }}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
-                          </div>
-                        ) : (
-                          <span>{t}</span>
-                        )}
-                      </div>
-                    ))}
-                    {eventEditing && (
-                      <button className="menu-edit-add" onClick={() => setEventDraft({ ...eventDraft, types: [...eventDraft.types, ""] })} style={{ marginTop: 4 }}>+ Typ hinzufügen</button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Description or Menu editing */}
-                {eventEditing ? (
-                  <div className="menu-modal-section">
-                    <h3>Menü &amp; Getränke</h3>
-                    <div className="menu-modal-items">
-                      {d.menuItems.map((item, i) => (
-                        <div key={i} className="menu-modal-item">
-                          <input className="menu-edit-name" value={item} onChange={(e) => {
-                            const items = [...eventDraft.menuItems];
-                            items[i] = e.target.value;
-                            setEventDraft({ ...eventDraft, menuItems: items });
-                          }} />
-                          <button className="menu-edit-remove" onClick={() => {
-                            setEventDraft({ ...eventDraft, menuItems: eventDraft.menuItems.filter((_, idx) => idx !== i) });
-                          }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                          </button>
-                        </div>
-                      ))}
-                      <button className="menu-edit-add" onClick={() => setEventDraft({ ...eventDraft, menuItems: [...eventDraft.menuItems, ""] })}>+ Hinzufügen</button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="menu-modal-section">
-                    <h3>Unser Angebot</h3>
-                    <p className="event-description">
-                      Wir gestalten Ihr Event ganz nach Ihren Wünschen — von einem exklusiven Tapas-Buffet
-                      über eine traditionelle Paella bis hin zu einem mehrgängigen Menü mit erlesenen spanischen Weinen.
-                      Unser Team kümmert sich um alles: Dekoration, Musik und ein unvergessliches kulinarisches Erlebnis.
-                    </p>
-                    <p className="event-description">
-                      Kontaktieren Sie uns für ein individuelles Angebot — wir beraten Sie gerne persönlich.
-                    </p>
-                  </div>
-                )}
-
+              <div className="menu-modal-body" style={{ padding: 0 }}>
+                <img src={d.image} alt="Eventos Privados" style={{ width: '100%', display: 'block', borderRadius: '0 0 24px 24px' }} />
               </div>
             </div>
           </div>
@@ -837,42 +892,132 @@ export default function Home() {
           <div className="c-section-tag" data-edit="text" data-edit-key="gallery-tag">Galerie</div>
           <h2 className="c-section-title" data-edit="text" data-edit-key="gallery-title">Einblicke ins El Español</h2>
           <p className="c-section-desc" data-edit="text" data-edit-key="gallery-desc">Unsere Gerichte, unser Ambiente — lassen Sie sich inspirieren.</p>
-          <div className="c-divider"></div>
+          <div className="c-ornamental-divider">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
         </div>
         <div className="c-gallery-grid">
           <div className="c-gallery-item fade-up"><img src="/imagens/572647358_18530299819015485_6265063719025103180_n.jpg" alt="Restaurant 1" loading="lazy" data-edit="image" data-edit-key="gallery1" /></div>
-          <div className="c-gallery-item fade-up"><img src="/imagens/572866302_18530296510015485_692596508240286969_n.jpg" alt="Restaurant 2" loading="lazy" data-edit="image" data-edit-key="gallery2" /></div>
-          <div className="c-gallery-item fade-up"><img src="/imagens/588926294_18535300567015485_4397774798160919383_n.jpg" alt="Restaurant 3" loading="lazy" data-edit="image" data-edit-key="gallery3" /></div>
-          <div className="c-gallery-item fade-up"><img src="/imagens/589138788_18536655121015485_7270480759128976804_n.jpg" alt="Restaurant 4" loading="lazy" data-edit="image" data-edit-key="gallery4" /></div>
+          <div className="c-gallery-item fade-up fade-up-delay-1"><img src="/imagens/572866302_18530296510015485_692596508240286969_n.jpg" alt="Restaurant 2" loading="lazy" data-edit="image" data-edit-key="gallery2" /></div>
+          <div className="c-gallery-item fade-up fade-up-delay-2"><img src="/imagens/588926294_18535300567015485_4397774798160919383_n.jpg" alt="Restaurant 3" loading="lazy" data-edit="image" data-edit-key="gallery3" /></div>
+          <div className="c-gallery-item fade-up fade-up-delay-3"><img src="/imagens/589138788_18536655121015485_7270480759128976804_n.jpg" alt="Restaurant 4" loading="lazy" data-edit="image" data-edit-key="gallery4" /></div>
           <div className="c-gallery-item fade-up"><img src="/imagens/589279792_18536655139015485_4424482717676331175_n.jpg" alt="Restaurant 5" loading="lazy" data-edit="image" data-edit-key="gallery5" /></div>
-          <div className="c-gallery-item fade-up"><img src="/imagens/589912264_18536655103015485_3152331592810438615_n.jpg" alt="Restaurant 6" loading="lazy" data-edit="image" data-edit-key="gallery6" /></div>
+          <div className="c-gallery-item fade-up fade-up-delay-1"><img src="/imagens/589912264_18536655103015485_3152331592810438615_n.jpg" alt="Restaurant 6" loading="lazy" data-edit="image" data-edit-key="gallery6" /></div>
         </div>
       </section>
       </div>
 
+      {/* PARALLAX QUOTE */}
+      <section className="c-parallax-quote" data-edit="image" data-edit-key="quote-bg">
+        <div className="c-parallax-content fade-up">
+          <div className="c-parallax-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z"/></svg>
+          </div>
+          <p className="c-parallax-text" data-edit="text" data-edit-key="quote-text">
+            Kochen ist Liebe, die man schmecken kann — und bei El Español bringen wir diese Liebe in jedes Gericht.
+          </p>
+          <div className="c-parallax-author" data-edit="text" data-edit-key="quote-author">— El Español Team</div>
+        </div>
+      </section>
+
       {/* PLATOS ESTRELLA */}
       <section className="c-team-section" id="team" data-edit="bgcolor" data-edit-key="team-bg">
-        <div className="c-section" style={{ paddingTop: 100, paddingBottom: 100 }}>
+        <div className="c-section" style={{ paddingTop: 120, paddingBottom: 120 }}>
           <div className="c-section-header fade-up">
             <div className="c-section-tag" data-edit="text" data-edit-key="team-tag">Nuestros Favoritos</div>
-            <h2 className="c-section-title" data-edit="text" data-edit-key="team-title">Platos Estrella</h2>
-            <div className="c-divider"></div>
+            <h2 className="c-section-title" data-edit="text" data-edit-key="team-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+              <svg className="c-platos-emoji" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" strokeWidth="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              Platos Estrella
+              <svg className="c-platos-emoji" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" strokeWidth="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </h2>
+            <div className="c-ornamental-divider">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
           </div>
           <div className="c-team-grid">
             <div className="c-team-card fade-up">
               <div className="c-team-img"><img src="/imagens/589912264_18536655103015485_3152331592810438615_n.jpg" alt="Pulpo" loading="lazy" data-edit="image" data-edit-key="team1-img" /></div>
-              <h3 data-edit="text" data-edit-key="team1-name">Pulpo a la Gallega</h3>
-              <p data-edit="text" data-edit-key="team1-role">Clásico de Galicia</p>
+              <div className="c-team-card-body">
+                <h3 data-edit="text" data-edit-key="team1-name">Pulpo a la Gallega</h3>
+                <p data-edit="text" data-edit-key="team1-role">Clásico de Galicia</p>
+              </div>
             </div>
-            <div className="c-team-card fade-up">
+            <div className="c-team-card fade-up fade-up-delay-1">
               <div className="c-team-img"><img src="/imagens/572866302_18530296510015485_692596508240286969_n-1.jpg" alt="Patatas" loading="lazy" data-edit="image" data-edit-key="team2-img" /></div>
-              <h3 data-edit="text" data-edit-key="team2-name">Patatas Bravas</h3>
-              <p data-edit="text" data-edit-key="team2-role">Picantes y crujientes</p>
+              <div className="c-team-card-body">
+                <h3 data-edit="text" data-edit-key="team2-name">Patatas Bravas</h3>
+                <p data-edit="text" data-edit-key="team2-role">Picantes y crujientes</p>
+              </div>
             </div>
-            <div className="c-team-card fade-up">
+            <div className="c-team-card fade-up fade-up-delay-2">
               <div className="c-team-img"><img src="/imagens/588926294_18535300567015485_4397774798160919383_n.jpg" alt="Chuletón" loading="lazy" data-edit="image" data-edit-key="team3-img" /></div>
-              <h3 data-edit="text" data-edit-key="team3-name">Chuletón a la Piedra</h3>
-              <p data-edit="text" data-edit-key="team3-role">Servido en piedra caliente</p>
+              <div className="c-team-card-body">
+                <h3 data-edit="text" data-edit-key="team3-name">Chuletón a la Piedra</h3>
+                <p data-edit="text" data-edit-key="team3-role">Servido en piedra caliente</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="c-testimonials-section" data-edit="bgcolor" data-edit-key="testimonials-bg">
+        <div className="c-section" style={{ paddingTop: 120, paddingBottom: 120 }}>
+          <div className="c-section-header fade-up">
+            <div className="c-section-tag" data-edit="text" data-edit-key="testimonials-tag">Kundenstimmen</div>
+            <h2 className="c-section-title" data-edit="text" data-edit-key="testimonials-title">Was unsere Gäste sagen</h2>
+            <p className="c-section-desc" data-edit="text" data-edit-key="testimonials-desc">
+              Echte Bewertungen von zufriedenen Gästen aus Buchs und der Region.
+            </p>
+            <div className="c-ornamental-divider">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+          </div>
+          <div className="c-testimonials-grid">
+            <div className="c-testimonial-card fade-up">
+              <div className="c-testimonial-stars">
+                {starSvg}{starSvg}{starSvg}{starSvg}{starSvg}
+              </div>
+              <p className="c-testimonial-text" data-edit="text" data-edit-key="testimonial1-text">
+                &ldquo;Das beste spanische Restaurant in der Region! Die Paella war einfach himmlisch und die Sangría perfekt. Wir kommen definitiv wieder.&rdquo;
+              </p>
+              <div className="c-testimonial-author">
+                <div className="c-testimonial-avatar">M</div>
+                <div>
+                  <div className="c-testimonial-name" data-edit="text" data-edit-key="testimonial1-name">Marco W.</div>
+                  <div className="c-testimonial-source" data-edit="text" data-edit-key="testimonial1-source">Google Bewertung</div>
+                </div>
+              </div>
+            </div>
+            <div className="c-testimonial-card fade-up fade-up-delay-1">
+              <div className="c-testimonial-stars">
+                {starSvg}{starSvg}{starSvg}{starSvg}{starSvg}
+              </div>
+              <p className="c-testimonial-text" data-edit="text" data-edit-key="testimonial2-text">
+                &ldquo;Fantastische Tapas und eine sehr gemütliche Atmosphäre. Das Personal ist super freundlich und die Portionen grosszügig. Absolut empfehlenswert!&rdquo;
+              </p>
+              <div className="c-testimonial-author">
+                <div className="c-testimonial-avatar">S</div>
+                <div>
+                  <div className="c-testimonial-name" data-edit="text" data-edit-key="testimonial2-name">Sandra K.</div>
+                  <div className="c-testimonial-source" data-edit="text" data-edit-key="testimonial2-source">Google Bewertung</div>
+                </div>
+              </div>
+            </div>
+            <div className="c-testimonial-card fade-up fade-up-delay-2">
+              <div className="c-testimonial-stars">
+                {starSvg}{starSvg}{starSvg}{starSvg}{starSvg}
+              </div>
+              <p className="c-testimonial-text" data-edit="text" data-edit-key="testimonial3-text">
+                &ldquo;Wir haben hier unseren Geburtstag gefeiert — ein unvergesslicher Abend! Die Chuletón war perfekt und der Wein hervorragend. Wie in Spanien!&rdquo;
+              </p>
+              <div className="c-testimonial-author">
+                <div className="c-testimonial-avatar">T</div>
+                <div>
+                  <div className="c-testimonial-name" data-edit="text" data-edit-key="testimonial3-name">Thomas B.</div>
+                  <div className="c-testimonial-source" data-edit="text" data-edit-key="testimonial3-source">TripAdvisor</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -894,7 +1039,9 @@ export default function Home() {
           <div className="c-section-tag" data-edit="text" data-edit-key="contact-tag">Kontakt</div>
           <h2 className="c-section-title" data-edit="text" data-edit-key="contact-title">Tisch reservieren</h2>
           <p className="c-section-desc" data-edit="text" data-edit-key="contact-desc">Reservieren Sie online oder rufen Sie uns an — wir freuen uns auf Ihren Besuch.</p>
-          <div className="c-divider"></div>
+          <div className="c-ornamental-divider">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
         </div>
         <div className="c-contact-grid">
           <form className="c-form fade-up" onSubmit={(e) => { e.preventDefault(); sendWhatsApp(); }}>
@@ -924,15 +1071,21 @@ export default function Home() {
           <div className="c-contact-info fade-up">
             <h3 data-edit="text" data-edit-key="contact-info-title">Besuchen Sie uns</h3>
             <div className="c-contact-row">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+              <div className="c-contact-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+              </div>
               <div><h4>Adresse</h4><p data-edit="text" data-edit-key="contact-address">Langäulistrasse 22, 9470 Buchs SG</p></div>
             </div>
             <div className="c-contact-row">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
+              <div className="c-contact-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
+              </div>
               <div><h4>Telefon</h4><p data-edit="text" data-edit-key="contact-phone">+41 81 756 XX XX</p></div>
             </div>
             <div className="c-contact-row">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+              <div className="c-contact-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+              </div>
               <div><h4>Öffnungszeiten</h4><p data-edit="text" data-edit-key="contact-hours">Di–Sa: 11:30–14:00 &amp; 17:30–22:00 / So–Mo: Geschlossen</p></div>
             </div>
           </div>
@@ -945,7 +1098,7 @@ export default function Home() {
             src="https://maps.google.com/maps?q=Lang%C3%A4ulistrasse+22+9470+Buchs+SG&t=&z=15&ie=UTF8&iwloc=&output=embed"
             width="100%"
             height="300"
-            style={{ border: 0, borderRadius: 16 }}
+            style={{ border: 0, borderRadius: 20 }}
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
@@ -956,7 +1109,13 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer className="c-footer" data-edit="bgcolor" data-edit-key="footer-bg">
-        <div className="c-footer-logo" data-edit="logo" data-edit-key="footer-logo">El Español</div>
+        <div className="c-footer-banner" data-edit="bgcolor" data-edit-key="footer-banner">
+          <img src="/logo-1.png" alt="El Español" className="c-footer-banner-logo" data-edit="image" data-edit-key="footer-banner-logo" />
+          <div className="c-footer-banner-text">
+            <div className="c-footer-banner-name" data-edit="text" data-edit-key="footer-banner-name">El Español Buchs</div>
+            <div className="c-footer-banner-tagline" data-edit="text" data-edit-key="footer-banner-tagline">Spanisches Restaurant &amp; Tapas Bar — Buchs SG</div>
+          </div>
+        </div>
         <div className="c-footer-links">
           <a href="#about" data-edit="text" data-edit-key="footer-link1">Über uns</a>
           <a href="#services" data-edit="text" data-edit-key="footer-link2">Speisekarte</a>
@@ -971,8 +1130,9 @@ export default function Home() {
               const btn = document.querySelector('.te-toggle') as HTMLButtonElement;
               if (btn) btn.click();
             }}
+            aria-label="Editor Mode"
           >
-            Admin
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </a>
         </div>
         <div className="c-footer-social">
@@ -980,8 +1140,148 @@ export default function Home() {
           <a href="#" aria-label="Facebook" data-edit="link" data-edit-key="social-facebook" target="_blank" rel="noopener noreferrer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" /></svg></a>
           <a href="#" aria-label="TikTok" data-edit="link" data-edit-key="social-tiktok" target="_blank" rel="noopener noreferrer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12a4 4 0 104 4V4a5 5 0 005 5" /></svg></a>
         </div>
+        <div className="c-footer-divider"></div>
         <div className="c-footer-copy" data-edit="text" data-edit-key="footer-copy">© 2026 El Español — Langäulistrasse 22, Buchs SG</div>
       </footer>
+      {isEditorMode && (
+        <div className="c-loader-editor-wrap" onClick={() => setLoaderModalOpen(true)}>
+          <div className="c-loader-editor-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            Loader Config
+          </div>
+        </div>
+      )}
+
+      {/* Loader Config Modal */}
+      {loaderModalOpen && (
+        <div className="c-loader-modal-overlay" onClick={() => setLoaderModalOpen(false)}>
+          <div className="c-loader-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="c-loader-modal-header">
+              <h3>Loader Konfiguration</h3>
+              <button onClick={() => setLoaderModalOpen(false)} className="c-loader-modal-close">&times;</button>
+            </div>
+            <div className="c-loader-modal-body">
+              <div className="c-loader-modal-toggle">
+                <label>Loader aktiv</label>
+                <button
+                  className={`c-toggle-btn${loaderEnabled ? ' active' : ''}`}
+                  onClick={() => setLoaderEnabled(!loaderEnabled)}
+                >{loaderEnabled ? 'AN' : 'AUS'}</button>
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Hintergrundfarbe</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="color" value={loaderBg} onChange={(e) => setLoaderBg(e.target.value)} />
+                  <span style={{ fontSize: 13, color: '#888' }}>{loaderBg}</span>
+                </div>
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Titel</label>
+                <input type="text" value={loaderText} onChange={(e) => setLoaderText(e.target.value)} className="c-loader-modal-input" />
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Titel Farbe</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="color" value={loaderTextColor} onChange={(e) => setLoaderTextColor(e.target.value)} />
+                  <span style={{ fontSize: 13, color: '#888' }}>{loaderTextColor}</span>
+                </div>
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Untertitel</label>
+                <input type="text" value={loaderTagline} onChange={(e) => setLoaderTagline(e.target.value)} className="c-loader-modal-input" />
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Untertitel Farbe</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="color" value={loaderTaglineColor} onChange={(e) => setLoaderTaglineColor(e.target.value)} />
+                  <span style={{ fontSize: 13, color: '#888' }}>{loaderTaglineColor}</span>
+                </div>
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Logo URL</label>
+                <input type="text" value={loaderImg} onChange={(e) => setLoaderImg(e.target.value)} className="c-loader-modal-input" placeholder="/logo-1.png" />
+              </div>
+              <div className="c-loader-modal-preview">
+                <label>Vorschau</label>
+                <div className="c-loader-modal-preview-box" style={{ background: loaderBg }}>
+                  <img src={loaderImg} alt="" style={{ width: 60, display: 'block', margin: '0 auto 10px' }} />
+                  <div style={{ fontFamily: 'var(--serif)', fontSize: 16, color: loaderTextColor, marginBottom: 4 }}>{loaderText}</div>
+                  <div style={{ fontSize: 11, color: loaderTaglineColor }}>{loaderTagline}</div>
+                </div>
+              </div>
+            </div>
+            <div className="c-loader-modal-footer">
+              <button className="c-loader-modal-save" onClick={() => {
+                const config = { enabled: loaderEnabled, bg: loaderBg, text: loaderText, tagline: loaderTagline, img: loaderImg, textColor: loaderTextColor, taglineColor: loaderTaglineColor };
+                localStorage.setItem('loader-config', JSON.stringify(config));
+                setLoaderModalOpen(false);
+              }}>Speichern</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Float */}
+      <a
+        href="https://wa.me/41787203134?text=Hallo%2C%20ich%20möchte%20gerne%20einen%20Tisch%20reservieren.%20Vielen%20Dank!"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="c-whatsapp-float"
+        aria-label="WhatsApp Reservierung"
+        data-edit="link"
+        data-edit-key="whatsapp-float"
+        data-edit-color-target="background"
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
+
+      {/* Chips Config Modal */}
+      {chipsModalOpen && (
+        <div className="c-loader-modal-overlay" onClick={() => setChipsModalOpen(false)}>
+          <div className="c-loader-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="c-loader-modal-header">
+              <h3>Floating Chips</h3>
+              <button onClick={() => setChipsModalOpen(false)} className="c-loader-modal-close">&times;</button>
+            </div>
+            <div className="c-loader-modal-body">
+              <div className="c-loader-modal-group">
+                <label>Farbe</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="color" value={evtChipsColor} onChange={(e) => setEvtChipsColor(e.target.value)} />
+                  <span style={{ fontSize: 13, color: '#888' }}>{evtChipsColor}</span>
+                </div>
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Intensität ({Math.round(evtChipsOpacity * 100)}%)</label>
+                <input type="range" min="0.05" max="1" step="0.05" value={evtChipsOpacity} onChange={(e) => setEvtChipsOpacity(parseFloat(e.target.value))} style={{ width: '100%' }} />
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Wörter (eines pro Zeile)</label>
+                <textarea
+                  className="c-loader-modal-input"
+                  style={{ height: 180, resize: 'vertical' }}
+                  value={evtChips.join('\n')}
+                  onChange={(e) => setEvtChips(e.target.value.split('\n').filter(w => w.trim()))}
+                />
+              </div>
+              <div className="c-loader-modal-preview">
+                <label>Vorschau</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: 16, background: '#f9f5ef', borderRadius: 12 }}>
+                  {evtChips.map((w, i) => (
+                    <span key={i} style={{ fontFamily: 'var(--serif)', fontSize: 20, fontStyle: 'italic', color: evtChipsColor, opacity: evtChipsOpacity }}>{w}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="c-loader-modal-footer">
+              <button className="c-loader-modal-save" onClick={() => {
+                localStorage.setItem('events-chips-config', JSON.stringify({ chips: evtChips, color: evtChipsColor, opacity: evtChipsOpacity }));
+                setChipsModalOpen(false);
+              }}>Speichern</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Template Editor */}
       <TemplateEditor

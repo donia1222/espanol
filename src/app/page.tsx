@@ -873,6 +873,8 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
                 src="/imagens/651545438_18561993517015485_8719417173028106237_n.jpg"
                 alt="Eventos"
                 className="c-events-banner-img"
+                data-edit="image"
+                data-edit-key="events-banner-img"
               />
               {!isEditorMode && (
                 <div className="c-events-img-overlay">
@@ -964,21 +966,11 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
         const d = eventEditing ? eventDraft : eventData;
         return (
           <div className="menu-modal-overlay" onClick={closeEventModal}>
-            <div className="menu-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="menu-modal-header">
-                <h2>{getCardTitle("svc6-title", "Eventos Privados")}</h2>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  {eventEditing && (
-                    <button className="menu-modal-save" onClick={() => { saveEventData(eventDraft); setEventEditing(false); }}>Speichern</button>
-                  )}
-                  <button className="menu-modal-close" onClick={closeEventModal}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </div>
-              </div>
-              <div className="menu-modal-body" style={{ padding: 0 }}>
-                <img src={d.image} alt="Eventos Privados" style={{ width: '100%', display: 'block', borderRadius: '0 0 24px 24px' }} />
-              </div>
+            <div className="menu-modal" onClick={(e) => e.stopPropagation()} style={{ padding: 0, overflow: 'hidden' }}>
+              <button className="menu-modal-close" onClick={closeEventModal} style={{ position: 'absolute', top: 12, right: 12, zIndex: 10, background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+              <img src={d.image} alt="Eventos" style={{ width: '100%', display: 'block' }} data-edit="image" data-edit-key="events-modal-img" />
             </div>
           </div>
         );

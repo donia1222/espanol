@@ -184,6 +184,10 @@ export default function Home() {
   const [evtChipsColor, setEvtChipsColor] = useState('#c9362c');
   const [evtChipsOpacity, setEvtChipsOpacity] = useState(0.3);
   const [showCookie, setShowCookie] = useState(false);
+  const [heroLogoModalOpen, setHeroLogoModalOpen] = useState(false);
+  const [heroLogoBg, setHeroLogoBg] = useState('#ffffff');
+  const [heroLogoBgOpacity, setHeroLogoBgOpacity] = useState(1);
+  const [heroLogoVisible, setHeroLogoVisible] = useState(true);
   const [legalModal, setLegalModal] = useState<'datenschutz' | 'agb' | null>(null);
   const [datenschutzText, setDatenschutzText] = useState(`Datenschutzerklärung
 
@@ -271,6 +275,12 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
     }
     if (data['__legal_datenschutz']) setDatenschutzText(data['__legal_datenschutz'] as string);
     if (data['__legal_agb']) setAgbText(data['__legal_agb'] as string);
+    const hl = data['__hero_logo_config'] as Record<string, unknown> | undefined;
+    if (hl) {
+      if (hl.bg) setHeroLogoBg(hl.bg as string);
+      if (hl.bgOpacity !== undefined) setHeroLogoBgOpacity(hl.bgOpacity as number);
+      if (hl.visible === false) setHeroLogoVisible(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -295,6 +305,15 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
         if (cc.chips) setEvtChips(cc.chips);
         if (cc.color) setEvtChipsColor(cc.color);
         if (cc.opacity !== undefined) setEvtChipsOpacity(cc.opacity);
+      }
+    } catch {}
+    try {
+      const hlRaw = localStorage.getItem('hero-logo-config');
+      if (hlRaw) {
+        const hl = JSON.parse(hlRaw);
+        if (hl.bg) setHeroLogoBg(hl.bg);
+        if (hl.bgOpacity !== undefined) setHeroLogoBgOpacity(hl.bgOpacity);
+        if (hl.visible === false) setHeroLogoVisible(false);
       }
     } catch {}
     // Also load from template editor API data (synced across devices)
@@ -620,7 +639,21 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
           <div className="c-hero-tag" data-edit="text" data-edit-key="hero-tag">
             Spanisches Restaurant &amp; Tapas Bar
           </div>
-          <img src="/logo-1.png" alt="El Español" style={{ maxWidth: 220, margin: '0 auto 20px', display: 'block', background: '#fff', borderRadius: '50%', padding: 12 }} data-edit="image" data-edit-key="hero-logo" />
+          {heroLogoVisible && (
+            <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto 20px' }}>
+              <img src="/logo-1.png" alt="El Español" style={{ maxWidth: 220, display: 'block', background: `rgba(${parseInt(heroLogoBg.slice(1,3),16)},${parseInt(heroLogoBg.slice(3,5),16)},${parseInt(heroLogoBg.slice(5,7),16)},${heroLogoBgOpacity})`, borderRadius: '50%', padding: 12 }} data-edit="image" data-edit-key="hero-logo" />
+              {isEditorMode && (
+                <div onClick={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); setHeroLogoModalOpen(true); }} style={{ position: 'absolute', bottom: -8, right: -8, width: 32, height: 32, borderRadius: '50%', background: 'rgba(76,175,80,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                </div>
+              )}
+            </div>
+          )}
+          {!heroLogoVisible && isEditorMode && (
+            <div onClick={() => setHeroLogoModalOpen(true)} style={{ margin: '0 auto 20px', padding: '12px 24px', borderRadius: 12, background: 'rgba(76,175,80,0.15)', color: '#4CAF50', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--sans)', border: '1px solid rgba(76,175,80,0.3)', display: 'inline-block' }}>
+              Logo (oculto) — Config
+            </div>
+          )}
           <h1 data-edit="text" data-edit-key="hero-title">El Español</h1>
           <p className="c-hero-sub" data-edit="text" data-edit-key="hero-sub">
             Authentische spanische Küche, frische Tapas und erlesene Weine
@@ -1335,6 +1368,56 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
       >
         <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       </a>
+
+      {/* Hero Logo Config Modal */}
+      {heroLogoModalOpen && (
+        <div className="c-loader-modal-overlay" onClick={() => setHeroLogoModalOpen(false)}>
+          <div className="c-loader-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="c-loader-modal-header">
+              <h3>Hero Logo</h3>
+              <button onClick={() => setHeroLogoModalOpen(false)} className="c-loader-modal-close">&times;</button>
+            </div>
+            <div className="c-loader-modal-body">
+              <div className="c-loader-modal-toggle">
+                <label>Logo anzeigen</label>
+                <button
+                  className={`c-toggle-btn${heroLogoVisible ? ' active' : ''}`}
+                  onClick={() => setHeroLogoVisible(!heroLogoVisible)}
+                >{heroLogoVisible ? 'AN' : 'AUS'}</button>
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Hintergrundfarbe</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="color" value={heroLogoBg} onChange={(e) => setHeroLogoBg(e.target.value)} />
+                  <span style={{ fontSize: 13, color: '#888' }}>{heroLogoBg}</span>
+                </div>
+              </div>
+              <div className="c-loader-modal-group">
+                <label>Hintergrund Transparenz ({Math.round(heroLogoBgOpacity * 100)}%)</label>
+                <input type="range" min="0" max="1" step="0.05" value={heroLogoBgOpacity} onChange={(e) => setHeroLogoBgOpacity(parseFloat(e.target.value))} style={{ width: '100%' }} />
+              </div>
+              <div className="c-loader-modal-preview">
+                <label>Vorschau</label>
+                <div style={{ textAlign: 'center', padding: 20, background: '#1a1a1a', borderRadius: 12 }}>
+                  <img src="/logo-1.png" alt="" style={{ width: 100, background: `rgba(${parseInt(heroLogoBg.slice(1,3),16)},${parseInt(heroLogoBg.slice(3,5),16)},${parseInt(heroLogoBg.slice(5,7),16)},${heroLogoBgOpacity})`, borderRadius: '50%', padding: 8 }} />
+                </div>
+              </div>
+            </div>
+            <div className="c-loader-modal-footer">
+              <button className="c-loader-modal-save" onClick={() => {
+                const config = { bg: heroLogoBg, bgOpacity: heroLogoBgOpacity, visible: heroLogoVisible };
+                localStorage.setItem('hero-logo-config', JSON.stringify(config));
+                if (window.TemplateEditor) {
+                  const data = window.TemplateEditor.getData();
+                  data['__hero_logo_config'] = config;
+                  window.TemplateEditor.setData(data);
+                }
+                setHeroLogoModalOpen(false);
+              }}>Speichern</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Chips Config Modal */}
       {chipsModalOpen && (

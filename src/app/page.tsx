@@ -252,12 +252,34 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
     } catch {}
   }, []);
 
+  const applyConfigFromData = useCallback((data: Record<string, unknown>) => {
+    const lc = data['__loader_config'] as Record<string, unknown> | undefined;
+    if (lc) {
+      if (lc.enabled === false) setLoaderEnabled(false);
+      if (lc.bg) setLoaderBg(lc.bg as string);
+      if (lc.text) setLoaderText(lc.text as string);
+      if (lc.tagline) setLoaderTagline(lc.tagline as string);
+      if (lc.img) setLoaderImg(lc.img as string);
+      if (lc.textColor) setLoaderTextColor(lc.textColor as string);
+      if (lc.taglineColor) setLoaderTaglineColor(lc.taglineColor as string);
+    }
+    const cc = data['__chips_config'] as Record<string, unknown> | undefined;
+    if (cc) {
+      if (cc.chips) setEvtChips(cc.chips as string[]);
+      if (cc.color) setEvtChipsColor(cc.color as string);
+      if (cc.opacity !== undefined) setEvtChipsOpacity(cc.opacity as number);
+    }
+    if (data['__legal_datenschutz']) setDatenschutzText(data['__legal_datenschutz'] as string);
+    if (data['__legal_agb']) setAgbText(data['__legal_agb'] as string);
+  }, []);
+
   useEffect(() => {
+    // Load from localStorage first (fast)
     try {
       const saved = localStorage.getItem('loader-config');
       if (saved) {
         const c = JSON.parse(saved);
-        if (c.enabled === false) { setLoaderEnabled(false); }
+        if (c.enabled === false) setLoaderEnabled(false);
         if (c.bg) setLoaderBg(c.bg);
         if (c.text) setLoaderText(c.text);
         if (c.tagline) setLoaderTagline(c.tagline);
@@ -275,8 +297,17 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
         if (cc.opacity !== undefined) setEvtChipsOpacity(cc.opacity);
       }
     } catch {}
+    // Also load from template editor API data (synced across devices)
+    const checkTE = setInterval(() => {
+      if (window.TemplateEditor) {
+        const data = window.TemplateEditor.getData();
+        applyConfigFromData(data);
+        clearInterval(checkTE);
+      }
+    }, 500);
+    setTimeout(() => clearInterval(checkTE), 10000);
     const timer = setTimeout(() => setShowLoader(false), 2000);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); clearInterval(checkTE); };
   }, []);
 
   const [eventModal, setEventModal] = useState(false);
@@ -1287,6 +1318,11 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
               <button className="c-loader-modal-save" onClick={() => {
                 const config = { enabled: loaderEnabled, bg: loaderBg, text: loaderText, tagline: loaderTagline, img: loaderImg, textColor: loaderTextColor, taglineColor: loaderTaglineColor };
                 localStorage.setItem('loader-config', JSON.stringify(config));
+                if (window.TemplateEditor) {
+                  const data = window.TemplateEditor.getData();
+                  data['__loader_config'] = config;
+                  window.TemplateEditor.setData(data);
+                }
                 setLoaderModalOpen(false);
               }}>Speichern</button>
             </div>
@@ -1348,7 +1384,13 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
             </div>
             <div className="c-loader-modal-footer">
               <button className="c-loader-modal-save" onClick={() => {
-                localStorage.setItem('events-chips-config', JSON.stringify({ chips: evtChips, color: evtChipsColor, opacity: evtChipsOpacity }));
+                const chipsConfig = { chips: evtChips, color: evtChipsColor, opacity: evtChipsOpacity };
+                localStorage.setItem('events-chips-config', JSON.stringify(chipsConfig));
+                if (window.TemplateEditor) {
+                  const data = window.TemplateEditor.getData();
+                  data['__chips_config'] = chipsConfig;
+                  window.TemplateEditor.setData(data);
+                }
                 setChipsModalOpen(false);
               }}>Speichern</button>
             </div>
@@ -1398,6 +1440,12 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
                 <button className="c-loader-modal-save" onClick={() => {
                   if (legalModal === 'datenschutz') localStorage.setItem('legal-datenschutz', datenschutzText);
                   else localStorage.setItem('legal-agb', agbText);
+                  if (window.TemplateEditor) {
+                    const data = window.TemplateEditor.getData();
+                    data['__legal_datenschutz'] = datenschutzText;
+                    data['__legal_agb'] = agbText;
+                    window.TemplateEditor.setData(data);
+                  }
                   setLegalModal(null);
                 }}>Speichern</button>
               </div>

@@ -2,7 +2,7 @@
 
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 html { scroll-behavior:smooth; }
-body { font-family: var(--font-sans, 'Outfit', sans-serif); color:#2c2c2c; background:#fff; overflow-x:hidden; opacity:0; transition:opacity 0.3s ease; }
+body { font-family: var(--font-sans, 'Outfit', sans-serif); color:#2c2c2c; background:#fff; overflow-x:hidden; opacity:1; }
 body.te-ready { opacity:1 !important; }
 
 :root {

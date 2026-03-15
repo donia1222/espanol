@@ -57,7 +57,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <body className={`${cormorant.variable} ${outfit.variable}`} style={{ opacity: 0 }}>
+      <body className={`${cormorant.variable} ${outfit.variable}`}>
         {children}
       </body>
     </html>

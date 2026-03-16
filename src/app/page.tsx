@@ -756,6 +756,7 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
         ))}
         
         
+        
         <div className="c-hero-overlay" style={{
           position: 'absolute', inset: 0, zIndex: 0,
           background: `linear-gradient(180deg, ${heroBgOverlayColor}${Math.round(heroBgOverlayOpacity * 0.55 * 255).toString(16).padStart(2, '0')} 0%, ${heroBgOverlayColor}${Math.round(heroBgOverlayOpacity * 255).toString(16).padStart(2, '0')} 50%, ${heroBgOverlayColor}${Math.round(Math.min(1, heroBgOverlayOpacity * 1.27) * 255).toString(16).padStart(2, '0')} 100%)`,

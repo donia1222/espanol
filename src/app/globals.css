@@ -339,6 +339,7 @@ body.te-editing .c-services-bg-edit { pointer-events:auto; }
   display:grid; grid-template-columns:repeat(3, 1fr); gap:32px;
   max-width:1200px; margin:0 auto;
 }
+.c-services-grid--2col { grid-template-columns:repeat(2, 1fr); }
 .c-service-card {
   background:#fff; border-radius:20px; overflow:hidden;
   box-shadow:0 4px 24px rgba(0,0,0,0.04);
@@ -375,7 +376,7 @@ body.te-editing .c-services-bg-edit { pointer-events:auto; }
 /* EVENTS SECTION */
 .c-events-section { background:var(--cream); position:relative; overflow:hidden; }
 .c-events-floating-words {
-  position:absolute; inset:0; pointer-events:none; z-index:0;
+  position:absolute; inset:0; pointer-events:none; z-index:0; overflow:hidden;
 }
 .c-float-word {
   position:absolute;
@@ -1025,7 +1026,10 @@ body.te-editing .c-contact-map iframe { pointer-events:none; }
   .c-parallax-text { font-size:28px; }
 }
 @media (max-width:600px) {
+  .c-nav { padding:16px 16px; }
+  .c-nav.scrolled { padding:12px 16px; }
   .c-hero h1 { font-size:40px; }
+  .c-hero-content { padding:20px; }
   .c-hero-sub { font-size:15px; }
   .c-section { padding:80px 20px; }
   .c-section-title { font-size:34px; }
@@ -1052,6 +1056,10 @@ body.te-editing .c-contact-map iframe { pointer-events:none; }
   .c-parallax-text { font-size:24px; }
   .c-hero-scroll { display:none; }
   .c-hero-ornament-line { width:30px; }
+  .c-footer { padding:48px 16px 24px; }
+  .c-footer-banner { padding:16px 20px; max-width:100%; }
+  .c-cta-section { padding:80px 20px; }
+  .c-cookie-banner { flex-direction:column; gap:12px; padding:16px !important; }
 }
 
 /* WHATSAPP FLOAT */

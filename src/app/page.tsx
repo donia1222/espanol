@@ -902,7 +902,7 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
           </div>
 
           {/* SEGUNDA FILA: Drinks, Vinos */}
-          <div className="c-services-grid" style={{ marginTop: 32, gridTemplateColumns: 'repeat(2, 1fr)' }}>
+          <div className="c-services-grid c-services-grid--2col" style={{ marginTop: 32 }}>
             {/* DRINKS */}
             <div className="c-service-card fade-up">
               <div className="c-service-img">

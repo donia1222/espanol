@@ -367,19 +367,49 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (apiUrl) {
-      // Endpoint configured — load ONLY from API, show loader until done
+      // Endpoint configured — load ONLY from API, show loader until BOTH
+      // React config AND template-editor DOM edits are applied
       const startTime = Date.now();
       const minLoaderTime = 1200;
+
+      const hideLoader = () => {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, minLoaderTime - elapsed);
+        setTimeout(() => setShowLoader(false), remaining);
+      };
+
+      // Wait for both: (1) React config from API, (2) template-editor ready
+      let reactReady = false;
+      let teReady = document.body.classList.contains('te-ready');
+
+      const tryHide = () => {
+        if (reactReady && teReady) hideLoader();
+      };
+
+      // Watch for template-editor 'te-ready' class
+      if (!teReady) {
+        const observer = new MutationObserver(() => {
+          if (document.body.classList.contains('te-ready')) {
+            teReady = true;
+            observer.disconnect();
+            tryHide();
+          }
+        });
+        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        // Safety timeout: don't wait forever for template-editor
+        setTimeout(() => { teReady = true; observer.disconnect(); tryHide(); }, 8000);
+      }
+
       fetch('/api/load')
         .then(r => r.json())
         .then(data => {
           applyConfigFromData(data);
-          const elapsed = Date.now() - startTime;
-          const remaining = Math.max(0, minLoaderTime - elapsed);
-          setTimeout(() => setShowLoader(false), remaining);
+          reactReady = true;
+          tryHide();
         })
         .catch(() => {
-          setTimeout(() => setShowLoader(false), minLoaderTime);
+          reactReady = true;
+          tryHide();
         });
     } else {
       // No endpoint — load from localStorage only

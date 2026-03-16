@@ -412,20 +412,26 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
         if (hl.visible === false) setHeroLogoVisible(false);
       }
     } catch {}
-    // Load configs from server API, then hide loader
-    const startTime = Date.now();
-    const minLoaderTime = 1200;
-    fetch('/api/load')
-      .then(r => r.json())
-      .then(data => {
-        applyConfigFromData(data);
-        const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, minLoaderTime - elapsed);
-        setTimeout(() => setShowLoader(false), remaining);
-      })
-      .catch(() => {
-        setTimeout(() => setShowLoader(false), minLoaderTime);
-      });
+    // Load configs: from server API if endpoint configured, otherwise just localStorage
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (apiUrl) {
+      const startTime = Date.now();
+      const minLoaderTime = 1200;
+      fetch('/api/load')
+        .then(r => r.json())
+        .then(data => {
+          applyConfigFromData(data);
+          const elapsed = Date.now() - startTime;
+          const remaining = Math.max(0, minLoaderTime - elapsed);
+          setTimeout(() => setShowLoader(false), remaining);
+        })
+        .catch(() => {
+          setTimeout(() => setShowLoader(false), minLoaderTime);
+        });
+    } else {
+      // No endpoint — use localStorage only, hide loader immediately
+      setShowLoader(false);
+    }
   }, []);
 
   const [eventModal, setEventModal] = useState(false);
@@ -635,13 +641,15 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
   return (
     <>
       {/* LOADER */}
-      {showLoader && loaderEnabled && (
-        <div className="c-loader" style={{ background: loaderBg }}>
-          <div className="c-loader-content">
-            <img src={loaderImg} alt="El Español" style={{ width: 120, display: 'block', margin: '0 auto 20px' }} className="c-loader-logo" />
-            <div className="c-loader-name" style={{ color: loaderTextColor }}>{loaderText}</div>
-            <div className="c-loader-tagline" style={{ color: loaderTaglineColor }}>{loaderTagline}</div>
-          </div>
+      {showLoader && (
+        <div className="c-loader" style={{ background: loaderEnabled ? loaderBg : '#fff' }}>
+          {loaderEnabled && (
+            <div className="c-loader-content">
+              <img src={loaderImg} alt="El Español" style={{ width: 120, display: 'block', margin: '0 auto 20px' }} className="c-loader-logo" />
+              <div className="c-loader-name" style={{ color: loaderTextColor }}>{loaderText}</div>
+              <div className="c-loader-tagline" style={{ color: loaderTaglineColor }}>{loaderTagline}</div>
+            </div>
+          )}
         </div>
       )}
 

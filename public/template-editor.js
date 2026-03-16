@@ -1320,7 +1320,19 @@
             };
         }
 
+        // Show loader on save button
+        var saveBtn = sidebar.querySelector('#teSave');
+        var saveBtnOriginal = saveBtn ? saveBtn.innerHTML : 'Speichern';
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<svg class="te-spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="31.4 31.4" stroke-linecap="round"/></svg>';
+        }
+
         saveData(function () {
+            if (saveBtn) {
+                saveBtn.innerHTML = saveBtnOriginal;
+                saveBtn.disabled = false;
+            }
             closeSidebar();
         });
     }

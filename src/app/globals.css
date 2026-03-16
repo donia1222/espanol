@@ -1235,6 +1235,9 @@ body.te-editing [data-edit="image"]:hover > .te-badge { opacity:1; }
   color:#fff; box-shadow:0 4px 12px rgba(77,211,91,0.3);
 }
 .te-btn-save:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(77,211,91,0.4); }
+.te-btn-save:disabled { opacity:0.8; cursor:wait; }
+.te-spinner { animation:te-spin 0.8s linear infinite; }
+@keyframes te-spin { to { transform:rotate(360deg); } }
 .te-btn-reset { background:#f4f7fb; color:#6b7d99; }
 .te-btn-reset:hover { background:#fee2e2; color:#ef4444; }
 .te-toast {

@@ -162,6 +162,32 @@ const defaultMenuData: MenuData = {
 
 type MenuCategory = "vorspeisen" | "hauptgerichte" | "desserts" | "drinks" | "vinos";
 
+interface EventData {
+  title: string;
+  subtitle: string;
+  image: string;
+  types: string[];
+  menuItems: string[];
+}
+
+const defaultEvent: EventData = {
+  title: "Ihr privates Event",
+  subtitle: "Feiern Sie bei uns — wir kümmern uns um alles",
+  image: "/imagens/651545438_18561993517015485_8719417173028106237_n.jpg",
+  types: ["Geburtstag", "Firmenevent", "Hochzeit", "Familienfeier", "Jubiläum"],
+  menuItems: [
+    "Tapas-Platte gemischt",
+    "Paella für alle Gäste",
+    "Chuletón a la Piedra",
+    "Gambas al Ajillo",
+    "Ensalada Mediterránea",
+    "Sangría (Krug pro Tisch)",
+    "Hauswein rot/weiss",
+    "Crema Catalana",
+    "Café & Digestif",
+  ],
+};
+
 export default function Home() {
   const navRef = useRef<HTMLElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -295,6 +321,22 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
       if (hl.bgOpacity !== undefined) setHeroLogoBgOpacity(hl.bgOpacity as number);
       if (hl.visible === false) setHeroLogoVisible(false);
     }
+    // Load menu data
+    if (data._menuData) {
+      try {
+        const val = (data._menuData as Record<string, unknown>).text ?? data._menuData;
+        const parsed = typeof val === "string" ? JSON.parse(val) : val;
+        if (parsed && (parsed as MenuData).vorspeisen) setMenu(parsed as MenuData);
+      } catch { /* use default */ }
+    }
+    // Load event data
+    if (data._eventData) {
+      try {
+        const val = (data._eventData as Record<string, unknown>).text ?? data._eventData;
+        const parsed = typeof val === "string" ? JSON.parse(val) : val;
+        if (parsed && (parsed as EventData).title) setEventData(parsed as EventData);
+      } catch { /* use default */ }
+    }
   }, []);
 
   // Save config directly to server API (reliable, not dependent on TemplateEditor)
@@ -389,32 +431,6 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
   const [eventModal, setEventModal] = useState(false);
   const [eventEditing, setEventEditing] = useState(false);
 
-  interface EventData {
-    title: string;
-    subtitle: string;
-    image: string;
-    types: string[];
-    menuItems: string[];
-  }
-
-  const defaultEvent: EventData = {
-    title: "Ihr privates Event",
-    subtitle: "Feiern Sie bei uns — wir kümmern uns um alles",
-    image: "/imagens/651545438_18561993517015485_8719417173028106237_n.jpg",
-    types: ["Geburtstag", "Firmenevent", "Hochzeit", "Familienfeier", "Jubiläum"],
-    menuItems: [
-      "Tapas-Platte gemischt",
-      "Paella für alle Gäste",
-      "Chuletón a la Piedra",
-      "Gambas al Ajillo",
-      "Ensalada Mediterránea",
-      "Sangría (Krug pro Tisch)",
-      "Hauswein rot/weiss",
-      "Crema Catalana",
-      "Café & Digestif",
-    ],
-  };
-
   const [eventData, setEventData] = useState<EventData>(defaultEvent);
   const [eventDraft, setEventDraft] = useState<EventData>(defaultEvent);
 
@@ -443,21 +459,7 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
     window.open(url, "_blank");
   };
 
-  // Load event data from API
-  useEffect(() => {
-    fetch("/api/load")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data._eventData) {
-          try {
-            const val = data._eventData.text ?? data._eventData;
-            const parsed = typeof val === "string" ? JSON.parse(val) : val;
-            if (parsed && parsed.title) setEventData(parsed);
-          } catch { /* use default */ }
-        }
-      })
-      .catch(() => {});
-  }, []);
+  // Event data is loaded in the main config useEffect below
 
   const saveEventData = (evData: EventData) => {
     setEventData(evData);
@@ -503,21 +505,7 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
     return () => observer.disconnect();
   }, []);
 
-  // Load menu from API
-  useEffect(() => {
-    fetch("/api/load")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data._menuData) {
-          try {
-            const val = data._menuData.text ?? data._menuData;
-            const parsed = typeof val === "string" ? JSON.parse(val) : val;
-            if (parsed && parsed.vorspeisen) setMenu(parsed);
-          } catch { /* use default */ }
-        }
-      })
-      .catch(() => { /* use default */ });
-  }, []);
+  // Menu data is loaded in the main config useEffect below
 
   const saveMenu = (newMenu: MenuData) => {
     setMenu(newMenu);

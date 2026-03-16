@@ -753,13 +753,7 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
             </a>
           </div>
         </div>
-        {heroBgImages.length > 1 && (
-          <div className="c-hero-dots">
-            {heroBgImages.map((_, i) => (
-              <span key={i} className={`c-hero-dot${i === heroBgIndex ? ' active' : ''}`} onClick={() => setHeroBgIndex(i)} />
-            ))}
-          </div>
-        )}
+  
 
       </section>
 

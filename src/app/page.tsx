@@ -365,56 +365,9 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
   }, []);
 
   useEffect(() => {
-    // Load from localStorage first (fast)
-    try {
-      const saved = localStorage.getItem('loader-config');
-      if (saved) {
-        const c = JSON.parse(saved);
-        if (c.enabled === false) setLoaderEnabled(false);
-        if (c.bg) setLoaderBg(c.bg);
-        if (c.text) setLoaderText(c.text);
-        if (c.tagline) setLoaderTagline(c.tagline);
-        if (c.img) setLoaderImg(c.img);
-        if (c.textColor) setLoaderTextColor(c.textColor);
-        if (c.taglineColor) setLoaderTaglineColor(c.taglineColor);
-      }
-    } catch {}
-    try {
-      const chipsRaw = localStorage.getItem('events-chips-config');
-      if (chipsRaw) {
-        const cc = JSON.parse(chipsRaw);
-        if (cc.chips) setEvtChips(cc.chips);
-        if (cc.color) setEvtChipsColor(cc.color);
-        if (cc.opacity !== undefined) setEvtChipsOpacity(cc.opacity);
-      }
-    } catch {}
-    try {
-      const hbRaw = localStorage.getItem('hero-bg-images');
-      if (hbRaw) {
-        const hb = JSON.parse(hbRaw);
-        if (Array.isArray(hb) && hb.length > 0) setHeroBgImages(hb);
-      }
-    } catch {}
-    try {
-      const hoRaw = localStorage.getItem('hero-overlay-config');
-      if (hoRaw) {
-        const ho = JSON.parse(hoRaw);
-        if (ho.color) setHeroBgOverlayColor(ho.color);
-        if (ho.opacity !== undefined) setHeroBgOverlayOpacity(ho.opacity);
-      }
-    } catch {}
-    try {
-      const hlRaw = localStorage.getItem('hero-logo-config');
-      if (hlRaw) {
-        const hl = JSON.parse(hlRaw);
-        if (hl.bg) setHeroLogoBg(hl.bg);
-        if (hl.bgOpacity !== undefined) setHeroLogoBgOpacity(hl.bgOpacity);
-        if (hl.visible === false) setHeroLogoVisible(false);
-      }
-    } catch {}
-    // Load configs: from server API if endpoint configured, otherwise just localStorage
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (apiUrl) {
+      // Endpoint configured — load ONLY from API, show loader until done
       const startTime = Date.now();
       const minLoaderTime = 1200;
       fetch('/api/load')
@@ -429,7 +382,53 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
           setTimeout(() => setShowLoader(false), minLoaderTime);
         });
     } else {
-      // No endpoint — use localStorage only, hide loader immediately
+      // No endpoint — load from localStorage only
+      try {
+        const saved = localStorage.getItem('loader-config');
+        if (saved) {
+          const c = JSON.parse(saved);
+          if (c.enabled === false) setLoaderEnabled(false);
+          if (c.bg) setLoaderBg(c.bg);
+          if (c.text) setLoaderText(c.text);
+          if (c.tagline) setLoaderTagline(c.tagline);
+          if (c.img) setLoaderImg(c.img);
+          if (c.textColor) setLoaderTextColor(c.textColor);
+          if (c.taglineColor) setLoaderTaglineColor(c.taglineColor);
+        }
+      } catch {}
+      try {
+        const chipsRaw = localStorage.getItem('events-chips-config');
+        if (chipsRaw) {
+          const cc = JSON.parse(chipsRaw);
+          if (cc.chips) setEvtChips(cc.chips);
+          if (cc.color) setEvtChipsColor(cc.color);
+          if (cc.opacity !== undefined) setEvtChipsOpacity(cc.opacity);
+        }
+      } catch {}
+      try {
+        const hbRaw = localStorage.getItem('hero-bg-images');
+        if (hbRaw) {
+          const hb = JSON.parse(hbRaw);
+          if (Array.isArray(hb) && hb.length > 0) setHeroBgImages(hb);
+        }
+      } catch {}
+      try {
+        const hoRaw = localStorage.getItem('hero-overlay-config');
+        if (hoRaw) {
+          const ho = JSON.parse(hoRaw);
+          if (ho.color) setHeroBgOverlayColor(ho.color);
+          if (ho.opacity !== undefined) setHeroBgOverlayOpacity(ho.opacity);
+        }
+      } catch {}
+      try {
+        const hlRaw = localStorage.getItem('hero-logo-config');
+        if (hlRaw) {
+          const hl = JSON.parse(hlRaw);
+          if (hl.bg) setHeroLogoBg(hl.bg);
+          if (hl.bgOpacity !== undefined) setHeroLogoBgOpacity(hl.bgOpacity);
+          if (hl.visible === false) setHeroLogoVisible(false);
+        }
+      } catch {}
       setShowLoader(false);
     }
   }, []);

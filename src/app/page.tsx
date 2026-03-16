@@ -641,17 +641,15 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
   return (
     <>
       {/* LOADER */}
-      {showLoader && (
-        <div className="c-loader" style={{ background: loaderEnabled ? loaderBg : '#fff' }}>
-          {loaderEnabled && (
-            <div className="c-loader-content">
-              <img src={loaderImg} alt="El Español" style={{ width: 120, display: 'block', margin: '0 auto 20px' }} className="c-loader-logo" />
-              <div className="c-loader-name" style={{ color: loaderTextColor }}>{loaderText}</div>
-              <div className="c-loader-tagline" style={{ color: loaderTaglineColor }}>{loaderTagline}</div>
-            </div>
-          )}
-        </div>
-      )}
+      <div className={`c-loader${showLoader ? '' : ' hide'}`} style={{ background: loaderEnabled ? loaderBg : '#fff' }}>
+        {loaderEnabled && (
+          <div className="c-loader-content">
+            <img src={loaderImg} alt="El Español" style={{ width: 120, display: 'block', margin: '0 auto 20px' }} className="c-loader-logo" />
+            <div className="c-loader-name" style={{ color: loaderTextColor }}>{loaderText}</div>
+            <div className="c-loader-tagline" style={{ color: loaderTaglineColor }}>{loaderTagline}</div>
+          </div>
+        )}
+      </div>
 
       {/* NAV */}
       <nav className="c-nav" ref={navRef}>

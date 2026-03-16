@@ -42,7 +42,10 @@ body.te-ready { opacity:1 !important; }
   position:fixed; inset:0; z-index:99999;
   background:var(--cream);
   display:flex; align-items:center; justify-content:center;
-  animation:loaderFadeOut 0.5s ease 1.8s forwards;
+  transition:opacity 0.5s ease, visibility 0.5s ease;
+}
+.c-loader.hide {
+  opacity:0; pointer-events:none; visibility:hidden;
 }
 .c-loader-content { text-align:center; }
 .c-loader-logo {

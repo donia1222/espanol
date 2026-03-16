@@ -1030,28 +1030,88 @@
         var currentSize = data.size || (svg ? svg.getAttribute('width') : '18') || '18';
         var sizeNum = parseInt(currentSize) || 18;
 
+        // Check if this is a WhatsApp link
+        var isWhatsApp = currentHref.indexOf('wa.me') !== -1 || currentKey.indexOf('whatsapp') !== -1;
+
         sidebar.querySelector('.te-el-type').textContent = 'Link';
         sidebar.querySelector('.te-title-text').textContent = label;
 
-        body.innerHTML =
-            '<div class="te-group">' +
-            '  <label>' + escapeHtml(label) + ' — URL</label>' +
-            '  <input type="text" class="te-input" id="teLinkUrl" value="' + escapeHtml(currentHref) + '" placeholder="https://instagram.com/dein-profil">' +
-            '</div>' +
-            '<div class="te-group">' +
-            '  <label>Farbe</label>' +
-            '  <div class="te-color-row">' +
-            '    <input type="color" class="te-color-picker" id="teLinkColor" value="' + hexColor + '">' +
-            '    <input type="text" class="te-color-hex" id="teLinkColorHex" value="' + hexColor + '" maxlength="7">' +
-            '  </div>' +
-            '</div>' +
-            '<div class="te-group">' +
-            '  <label>Grösse <span id="teLinkSizeVal">' + sizeNum + 'px</span></label>' +
-            '  <input type="range" class="te-range" id="teLinkSize" min="12" max="60" value="' + sizeNum + '">' +
-            '</div>' +
-            '<div class="te-group" style="font-size:13px;color:#6b7d99">' +
-            '  <p>Der Link öffnet sich in einem neuen Tab.</p>' +
-            '</div>';
+        if (isWhatsApp) {
+            // Parse existing WhatsApp URL
+            var waPhone = '';
+            var waMessage = '';
+            try {
+                var waUrl = new URL(currentHref);
+                waPhone = waUrl.pathname.replace('/', '');
+                waMessage = decodeURIComponent(waUrl.searchParams.get('text') || '');
+            } catch(e) {}
+            if (data.waPhone) waPhone = data.waPhone;
+            if (data.waMessage) waMessage = data.waMessage;
+
+            body.innerHTML =
+                '<div class="te-group">' +
+                '  <label>Telefonnummer (mit Ländercode)</label>' +
+                '  <input type="text" class="te-input" id="teWaPhone" value="' + escapeHtml(waPhone) + '" placeholder="41441234567">' +
+                '</div>' +
+                '<div class="te-group">' +
+                '  <label>Nachricht</label>' +
+                '  <textarea class="te-input" id="teWaMessage" rows="3" style="resize:vertical;font-family:inherit" placeholder="Hallo, ich möchte gerne...">' + escapeHtml(waMessage) + '</textarea>' +
+                '</div>' +
+                '<div class="te-group">' +
+                '  <label>Farbe (Hintergrund)</label>' +
+                '  <div class="te-color-row">' +
+                '    <input type="color" class="te-color-picker" id="teLinkColor" value="' + hexColor + '">' +
+                '    <input type="text" class="te-color-hex" id="teLinkColorHex" value="' + hexColor + '" maxlength="7">' +
+                '  </div>' +
+                '</div>' +
+                '<div class="te-group">' +
+                '  <label>Grösse <span id="teLinkSizeVal">' + sizeNum + 'px</span></label>' +
+                '  <input type="range" class="te-range" id="teLinkSize" min="12" max="60" value="' + sizeNum + '">' +
+                '</div>' +
+                '<div class="te-group" style="font-size:12px;color:#6b7d99;background:#f0f4f8;padding:10px 12px;border-radius:8px">' +
+                '  <p style="margin:0">Vorschau: wa.me/<strong id="teWaPreviewPhone">' + escapeHtml(waPhone) + '</strong></p>' +
+                '</div>';
+
+            // Hidden input to store built URL
+            var hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.id = 'teLinkUrl';
+            hiddenInput.value = currentHref;
+            body.appendChild(hiddenInput);
+
+            var phoneInput = body.querySelector('#teWaPhone');
+            var msgInput = body.querySelector('#teWaMessage');
+            var previewPhone = body.querySelector('#teWaPreviewPhone');
+
+            function updateWaUrl() {
+                var p = phoneInput.value.replace(/[^0-9]/g, '');
+                var m = msgInput.value;
+                hiddenInput.value = 'https://wa.me/' + p + (m ? '?text=' + encodeURIComponent(m) : '');
+                previewPhone.textContent = p;
+            }
+            phoneInput.addEventListener('input', updateWaUrl);
+            msgInput.addEventListener('input', updateWaUrl);
+        } else {
+            body.innerHTML =
+                '<div class="te-group">' +
+                '  <label>' + escapeHtml(label) + ' — URL</label>' +
+                '  <input type="text" class="te-input" id="teLinkUrl" value="' + escapeHtml(currentHref) + '" placeholder="https://instagram.com/dein-profil">' +
+                '</div>' +
+                '<div class="te-group">' +
+                '  <label>Farbe</label>' +
+                '  <div class="te-color-row">' +
+                '    <input type="color" class="te-color-picker" id="teLinkColor" value="' + hexColor + '">' +
+                '    <input type="text" class="te-color-hex" id="teLinkColorHex" value="' + hexColor + '" maxlength="7">' +
+                '  </div>' +
+                '</div>' +
+                '<div class="te-group">' +
+                '  <label>Grösse <span id="teLinkSizeVal">' + sizeNum + 'px</span></label>' +
+                '  <input type="range" class="te-range" id="teLinkSize" min="12" max="60" value="' + sizeNum + '">' +
+                '</div>' +
+                '<div class="te-group" style="font-size:13px;color:#6b7d99">' +
+                '  <p>Der Link öffnet sich in einem neuen Tab.</p>' +
+                '</div>';
+        }
 
         var colorPicker = body.querySelector('#teLinkColor');
         var colorHex = body.querySelector('#teLinkColorHex');
@@ -1278,10 +1338,15 @@
             var linkUrl = sidebar.querySelector('#teLinkUrl');
             var linkColor = sidebar.querySelector('#teLinkColor');
             var linkSize = sidebar.querySelector('#teLinkSize');
+            var waPhoneInput = sidebar.querySelector('#teWaPhone');
+            var waMsgInput = sidebar.querySelector('#teWaMessage');
             var href = linkUrl ? linkUrl.value.trim() : '';
             var color = linkColor ? linkColor.value : '';
             var size = linkSize ? linkSize.value : '';
-            savedData[currentKey] = { href: href, color: color, size: size };
+            var linkData = { href: href, color: color, size: size };
+            if (waPhoneInput) linkData.waPhone = waPhoneInput.value.replace(/[^0-9]/g, '');
+            if (waMsgInput) linkData.waMessage = waMsgInput.value;
+            savedData[currentKey] = linkData;
             if (href) {
                 currentElement.href = href;
                 currentElement.target = '_blank';

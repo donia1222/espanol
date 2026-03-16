@@ -1083,7 +1083,7 @@ body.te-editing .c-contact-map iframe { pointer-events:none; }
 
 /* TEMPLATE EDITOR STYLES */
 .te-toggle {
-  position:fixed; bottom:56px; right:24px; z-index:9999;
+  position:fixed; bottom:56px; right:96px; z-index:9999;
   height:48px; border-radius:24px;
   background:linear-gradient(135deg,#fe6c75,#e1545d);
   color:#fff; border:none; cursor:pointer;
@@ -1282,7 +1282,7 @@ body.te-editing [data-edit="image"]:hover > .te-badge { opacity:1; }
 }
 @media (max-width:500px) {
   .te-sidebar { width:100%; right:-100%; }
-  .te-toggle { bottom:16px; right:16px; height:44px; padding:0 16px 0 12px; font-size:13px; }
+  .te-toggle { bottom:16px; right:80px; height:44px; padding:0 16px 0 12px; font-size:13px; }
 }
 @media (max-width:600px) {
   .te-status-hint, .te-status-sep, .te-status-key { display:none; }

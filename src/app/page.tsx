@@ -370,13 +370,20 @@ Es gilt Schweizer Recht. Gerichtsstand ist Buchs SG.`);
         if (hl.visible === false) setHeroLogoVisible(false);
       }
     } catch {}
-    // Load configs directly from server API (reliable, no TemplateEditor dependency)
+    // Load configs from server API, then hide loader
+    const startTime = Date.now();
+    const minLoaderTime = 1200;
     fetch('/api/load')
       .then(r => r.json())
-      .then(data => applyConfigFromData(data))
-      .catch(() => {});
-    const timer = setTimeout(() => setShowLoader(false), 2000);
-    return () => { clearTimeout(timer); };
+      .then(data => {
+        applyConfigFromData(data);
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, minLoaderTime - elapsed);
+        setTimeout(() => setShowLoader(false), remaining);
+      })
+      .catch(() => {
+        setTimeout(() => setShowLoader(false), minLoaderTime);
+      });
   }, []);
 
   const [eventModal, setEventModal] = useState(false);
